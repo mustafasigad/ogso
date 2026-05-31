@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { IconBrandWhatsapp, IconShieldCheck, IconBuilding, IconArrowLeft } from '@tabler/icons-react';
 
 export default function ListPage({ onBack }) {
@@ -29,7 +29,7 @@ export default function ListPage({ onBack }) {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/businesses', {
+      const res = await fetch('https://ogso-production.up.railway.app/api/businesses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -75,7 +75,7 @@ export default function ListPage({ onBack }) {
           <IconArrowLeft size={14}/> Back to home
         </button>
         <h1 style={s.h1}>List your business on Ogso</h1>
-        <p style={s.sub}>Reach thousands of customers across the Somali world. Free to start — no credit card needed.</p>
+        <p style={s.sub}>Reach thousands of customers across the Somali world. Free to start â€” no credit card needed.</p>
 
         <div style={s.card}>
           <div style={{fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:14}}>Business details</div>
@@ -140,3 +140,4 @@ export default function ListPage({ onBack }) {
     </div>
   );
 }
+

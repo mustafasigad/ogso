@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   IconBuilding, IconCalendar, IconShieldCheck, IconShieldX,
   IconTrash, IconEdit, IconEye, IconCheck, IconX,
   IconRefresh, IconUsers, IconCurrencyDollar, IconStar
 } from '@tabler/icons-react';
 
-const API = 'http://localhost:5000/api';
+const API = 'https://ogso-production.up.railway.app/api';
 
 export default function AdminPage({ onBack }) {
   const [tab, setTab] = useState('overview');
@@ -290,3 +290,4 @@ export default function AdminPage({ onBack }) {
     </div>
   );
 }
+

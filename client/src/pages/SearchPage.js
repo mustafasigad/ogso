@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   IconSearch, IconArrowLeft, IconBuilding, IconMapPin,
   IconStar, IconShieldCheck, IconAdjustmentsHorizontal,
@@ -37,7 +37,7 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
       params.set('limit', LIMIT);
       params.set('page', pageNum);
 
-      const res = await fetch(`http://localhost:5000/api/businesses?${params}`);
+      const res = await fetch(`https://ogso-production.up.railway.app/api/businesses?${params}`);
       const data = await res.json();
       const businesses = (data.businesses || []).map(b => ({
         id: b._id,
@@ -234,3 +234,4 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
     </div>
   );
 }
+

@@ -80,7 +80,7 @@ export default function App() {
   const [dbHotels, setDbHotels] = useState([]);
 
   React.useEffect(()=>{
-    fetch('http://localhost:5000/api/businesses?category=hotel')
+    fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
       .then(r=>r.json())
       .then(data=>{
         if(data.businesses && data.businesses.length > 0){
@@ -122,7 +122,7 @@ export default function App() {
   const handleBook = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/bookings', {
+      const res = await fetch('https://ogso-production.up.railway.app/api/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
