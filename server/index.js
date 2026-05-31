@@ -10,7 +10,7 @@ app.use(cors({ origin: ['http://localhost:3000','http://localhost:3001','http://
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI || 'mongodb://mongo:IRoolslHmJMhfIEjuGILXAIvmNvVxMCc@zephyr.proxy.rlwy.net:47938/ogso')
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err.message));
 
@@ -30,4 +30,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log('✅ Ogso server running on port ' + PORT));
+
 
