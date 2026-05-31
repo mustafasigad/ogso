@@ -1,0 +1,1 @@
+const mongoose=require('mongoose');module.exports=mongoose.model('User',new mongoose.Schema({uid:{type:String,default:''},name:{type:String,default:'Ogso User'},email:{type:String,default:''},phone:{type:String,default:''},role:{type:String,default:'guest'},language:{type:String,default:'so'},territory:{type:String,default:'ET-SO'}},{timestamps:true}));

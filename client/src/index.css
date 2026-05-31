@@ -1,0 +1,28 @@
+﻿:root {
+  --jade: #2D6A4F;
+  --jade-mid: #52B788;
+  --jade-pale: #F0F7F4;
+  --jade-dark: #1B3A2D;
+  --ivory: #F8F4EC;
+  --gold: #D4A843;
+  --gold-light: #FDF3DC;
+  --text: #1B3A2D;
+  --text-muted: #4D7A65;
+  --border: #C8E6D8;
+  --white: #ffffff;
+  --font-serif: Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--ivory); color: var(--text); line-height: 1.6; }
+.btn-primary { background: var(--jade); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; }
+.btn-primary:hover { background: var(--jade-dark); }
+.btn-outline { background: transparent; color: var(--jade); border: 1.5px solid var(--jade); border-radius: 10px; padding: 11px 20px; font-size: 14px; cursor: pointer; width: 100%; }
+.btn-gold { background: var(--gold); color: var(--jade-dark); border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 500; cursor: pointer; width: 100%; }
+.card { background: var(--white); border: 0.5px solid var(--border); border-radius: 14px; padding: 16px; }
+.input { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--text); background: var(--white); outline: none; }
+.input:focus { border-color: var(--jade); }
+.badge-verified { display: inline-flex; align-items: center; gap: 4px; background: var(--jade-pale); border: 0.5px solid var(--jade-mid); border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 500; color: var(--jade-dark); }
+.stars { color: var(--gold); font-size: 14px; }
+.tag { display: inline-block; background: var(--jade-pale); border-radius: 4px; font-size: 11px; color: var(--jade-dark); padding: 3px 8px; margin: 2px 3px 2px 0; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }

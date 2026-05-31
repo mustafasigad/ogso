@@ -1,0 +1,14 @@
+﻿{
+    "name":  "ogso",
+    "version":  "1.0.0",
+    "description":  "Ogso - Every business, verified.",
+    "scripts":  {
+                    "dev":  "concurrently \"npm run server\" \"npm run client\"",
+                    "server":  "cd server \u0026\u0026 npm run dev",
+                    "client":  "cd client \u0026\u0026 npm start",
+                    "install-all":  "npm install \u0026\u0026 cd server \u0026\u0026 npm install \u0026\u0026 cd ../client \u0026\u0026 npm install"
+                },
+    "devDependencies":  {
+                            "concurrently":  "^8.2.0"
+                        }
+}

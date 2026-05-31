@@ -1,0 +1,1 @@
+const router=require('express').Router();router.post('/',(req,res)=>res.json({url:''}));module.exports=router;

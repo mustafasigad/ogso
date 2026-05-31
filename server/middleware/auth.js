@@ -1,0 +1,1 @@
+const protect=async(req,res,next)=>next();const isOwner=(req,res,next)=>next();const isAdmin=(req,res,next)=>next();module.exports={protect,isOwner,isAdmin};
