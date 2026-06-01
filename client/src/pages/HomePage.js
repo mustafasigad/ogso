@@ -530,7 +530,14 @@ export default function App() {
 
 if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
 
- if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
+ if (page === 'admin') {
+  const pwd = prompt('Enter admin password:');
+  if (pwd !== 'Ogso2026!') {
+    setPage('home');
+    return null;
+  }
+  return <AdminPage onBack={()=>setPage('home')}/>;
+}
   return null;
 
 }

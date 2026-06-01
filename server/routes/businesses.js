@@ -34,7 +34,7 @@ router.post("/", async (req, res) => {
       description: req.body.description || "",
       plan:        "free",
       verified:    false,
-      active:      true,
+      active: false,
     });
     res.status(201).json({ business });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -55,3 +55,4 @@ router.delete("/:id", async (req, res) => {
 });
 
 module.exports = router;
+
