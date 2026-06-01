@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import ListPage from './ListPage';
 import SearchPage from './SearchPage';
 import AdminPage from './AdminPage';
@@ -107,11 +107,11 @@ export default function App() {
 
   const filtered = allHotels.filter(h => searchCity === 'All cities' || h.city === searchCity);
 
-  const rooms = (h) => h ? [
+  const rooms = (h) => h ? (h.rooms || [
     { type:'standard', name:'Standard room', price:h.price, beds:'Double bed - AC - en-suite', popular:false },
     { type:'deluxe', name:'Deluxe room', price:Math.round(h.price*1.6), beds:'King bed - city view - minibar', popular:true },
     { type:'family', name:'Family suite', price:Math.round(h.price*2.5), beds:'2 rooms - sleeps 5 - kitchenette', popular:false },
-  ] : [];
+  ]) : [];
 
   const nights = () => {
     if (!bookForm.checkin || !bookForm.checkout) return 1;
