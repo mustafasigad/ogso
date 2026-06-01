@@ -3,7 +3,7 @@ const Business = require("../models/Business");
 
 router.get("/", async (req, res) => {
   try {
-    const filter = { active: true };
+    const filter = req.query.admin === 'true' ? {} : { active: true };
     if (req.query.city) filter.city = new RegExp(req.query.city, "i");
     if (req.query.category) filter.category = new RegExp(req.query.category, 'i');
     if (req.query.territory) filter.territory = req.query.territory;
@@ -55,4 +55,5 @@ router.delete("/:id", async (req, res) => {
 });
 
 module.exports = router;
+
 

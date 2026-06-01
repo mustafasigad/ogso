@@ -18,7 +18,7 @@ export default function AdminPage({ onBack }) {
     setLoading(true);
     try {
       const [bRes, bookRes] = await Promise.all([
-        fetch(`${API}/businesses`),
+       fetch(`${API}/businesses?admin=true`),
         fetch(`${API}/bookings/my`)
       ]);
       const bData = await bRes.json();
@@ -38,7 +38,7 @@ export default function AdminPage({ onBack }) {
     await fetch(`${API}/businesses/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ verified })
+     body: JSON.stringify({ verified, active: verified })
     });
     fetchAll();
   };
