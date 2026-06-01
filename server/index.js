@@ -6,13 +6,16 @@ require('dotenv').config();
 
 const app = express();
 app.use(helmet());
-app.use(cors({ origin: ['http://localhost:3000','http://localhost:3001','http://localhost:5001','http://localhost:5000'], credentials: true }));
+app.use(cors({ origin: '*', credentials: false }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB error:', err.message));
+const MONGO_URI = process.env.MONGO_URI || process.env.MONGO_URL || process.env.DATABASE_URL || '';
+console.log('Connecting to MongoDB:', MONGO_URI ? 'URI found' : 'NO URI FOUND');
+
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB error:', err.message));
 
 app.use('/api/auth',       require('./routes/auth'));
 app.use('/api/businesses', require('./routes/businesses'));
@@ -22,15 +25,11 @@ app.use('/api/reviews',    require('./routes/reviews'));
 app.use('/api/search',     require('./routes/search'));
 app.use('/api/upload',     require('./routes/upload'));
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok', platform: 'Ogso' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', platform: 'Ogso', env: Object.keys(process.env).filter(k => k.includes('MONGO')) }));
 
 app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log('✅ Ogso server running on port ' + PORT));
-
-
-
-
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log('Ogso server running on port ' + PORT));
