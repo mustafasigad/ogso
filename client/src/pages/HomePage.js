@@ -1,43 +1,81 @@
-import React, { useState } from 'react';
-import ListPage from './ListPage';
-import SearchPage from './SearchPage';
-import AdminPage from './AdminPage';
-import { 
-  IconBuilding, IconToolsKitchen2, IconHeartRateMonitor, 
+import React, { useState, useEffect } from 'react';
+import {
+  IconBuilding, IconToolsKitchen2, IconHeartRateMonitor,
   IconShoppingBag, IconCar, IconCash, IconShieldCheck,
   IconBrandWhatsapp, IconLanguage, IconMapPin, IconStar,
-  IconSearch, IconArrowLeft, IconCheck
+  IconSearch, IconArrowLeft, IconCheck, IconAdjustmentsHorizontal
 } from '@tabler/icons-react';
+import SearchPage from './SearchPage';
+import ListPage from './ListPage';
+import AdminPage from './AdminPage';
 
 const HOTELS = [
-  { 
-    id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:850, rating:4.6, reviews:84, verified:true,
-    amenities:['WiFi','Breakfast','AC','Parking'],
+  { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
+    amenities:['WiFi','Breakfast','AC','Parking','Airport pickup'],
     photo:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
-    desc:'A premium hotel in the heart of Jigjiga town centre, popular with business travellers and diaspora visitors.'
+    desc:'The most prestigious hotel in Jigjiga, located in the heart of the city centre. Popular with government officials, business travellers and diaspora visitors.',
+    phone:'+251257750001',
+    rooms:[
+      { type:'standard', name:'Standard Room', price:1200, beds:'Double bed, AC, en-suite bathroom', popular:false },
+      { type:'deluxe', name:'Deluxe Room', price:1800, beds:'King bed, city view, minibar, AC', popular:true },
+      { type:'suite', name:'Executive Suite', price:3000, beds:'Separate living room, king bed, premium amenities', popular:false },
+    ]
   },
-  { 
-    id:'2', name:'Al-Bayaan Hotel', city:'Jigjiga', price:650, rating:4.3, reviews:51, verified:false,
-    amenities:['Parking','AC','Airport pickup'],
+  { id:'2', name:'Al-Noor Hotel', city:'Jigjiga', price:850, rating:4.3, reviews:51, verified:true,
+    amenities:['WiFi','AC','Parking','Restaurant','Prayer room'],
     photo:'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80',
-    desc:'Well located on Airport Road with easy access to Jigjiga Airport and the city centre.'
+    desc:'A well-established hotel popular with business travellers and families. Features an in-house halal restaurant serving Somali and Ethiopian cuisine.',
+    phone:'+251257750002',
+    rooms:[
+      { type:'standard', name:'Standard Room', price:850, beds:'Double bed, AC, en-suite bathroom', popular:false },
+      { type:'deluxe', name:'Deluxe Room', price:1300, beds:'King bed, city view, AC', popular:true },
+      { type:'family', name:'Family Room', price:1800, beds:'2 double beds, sleeps 4, AC', popular:false },
+    ]
   },
-  { 
-    id:'3', name:'Hawd Guest House', city:'Jigjiga', price:420, rating:4.1, reviews:37, verified:false,
-    amenities:['Budget','WiFi'],
+  { id:'3', name:'Hawd Guest House', city:'Jigjiga', price:550, rating:4.1, reviews:37, verified:false,
+    amenities:['WiFi','AC','Budget','24hr reception'],
     photo:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80',
-    desc:'Affordable and clean accommodation in the heart of Jigjiga market district.'
+    desc:'A clean and affordable guesthouse in the Hawd district, ideal for budget travellers and those visiting family in Jigjiga.',
+    phone:'+251257750003',
+    rooms:[
+      { type:'single', name:'Single Room', price:550, beds:'Single bed, AC, shared bathroom', popular:false },
+      { type:'standard', name:'Standard Room', price:750, beds:'Double bed, AC, en-suite bathroom', popular:true },
+    ]
   },
-  { 
-    id:'4', name:'Nugaal Palace Hotel', city:'Jigjiga', price:1100, rating:4.4, reviews:62, verified:true,
-    amenities:['Rooftop','Restaurant','WiFi'],
+  { id:'4', name:'Nugaal Palace Hotel', city:'Jigjiga', price:1500, rating:4.4, reviews:62, verified:true,
+    amenities:['Rooftop','Restaurant','WiFi','AC','Conference room'],
     photo:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&q=80',
-    desc:'Jigjiga most distinctive hotel with a rooftop terrace and in-house restaurant.'
+    desc:'Jigjiga most distinctive hotel featuring a rooftop terrace with panoramic views of the city and authentic Somali cuisine.',
+    phone:'+251257750004',
+    rooms:[
+      { type:'standard', name:'Standard Room', price:1500, beds:'Double bed, AC, en-suite bathroom', popular:false },
+      { type:'deluxe', name:'Deluxe Room', price:2200, beds:'King bed, rooftop view, minibar', popular:true },
+      { type:'suite', name:'Presidential Suite', price:4000, beds:'Full suite, private terrace, premium service', popular:false },
+    ]
+  },
+  { id:'5', name:'Jubba Hotel', city:'Jigjiga', price:900, rating:4.2, reviews:43, verified:false,
+    amenities:['WiFi','AC','Restaurant','Laundry','Parking'],
+    photo:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&q=80',
+    desc:'Named after the famous Jubba River, this hotel offers comfortable accommodation in central Jigjiga with a popular restaurant.',
+    phone:'+251257750005',
+    rooms:[
+      { type:'standard', name:'Standard Room', price:900, beds:'Double bed, AC, en-suite bathroom', popular:false },
+      { type:'deluxe', name:'Deluxe Room', price:1400, beds:'King bed, AC, minibar', popular:true },
+    ]
+  },
+  { id:'6', name:'Oriental Hotel Jigjiga', city:'Jigjiga', price:700, rating:4.0, reviews:28, verified:false,
+    amenities:['WiFi','AC','Near market','24hr reception'],
+    photo:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80',
+    desc:'A convenient hotel located near the main Jigjiga market, ideal for traders and shoppers. Competitive prices.',
+    phone:'+251257750006',
+    rooms:[
+      { type:'standard', name:'Standard Room', price:700, beds:'Double bed, AC, en-suite bathroom', popular:true },
+      { type:'family', name:'Family Room', price:1100, beds:'2 double beds, AC, sleeps 4', popular:false },
+    ]
   },
 ];
 
 const CITIES = ['All cities','Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa'];
-
 const CATEGORIES = [
   { icon:<IconBuilding size={15}/>, label:'Hotels' },
   { icon:<IconToolsKitchen2 size={15}/>, label:'Restaurants' },
@@ -46,7 +84,6 @@ const CATEGORIES = [
   { icon:<IconCar size={15}/>, label:'Car hire' },
   { icon:<IconCash size={15}/>, label:'Money transfer' },
 ];
-
 const TERRITORIES = [
   { name:'Somali Region', sub:'Ethiopia - Phase 1', active:true },
   { name:'Somalia', sub:'Mogadishu - Phase 3' },
@@ -54,19 +91,45 @@ const TERRITORIES = [
   { name:'Djibouti', sub:'City - Phase 2' },
   { name:'Kenya NFD', sub:'Garissa - Phase 4' },
 ];
-
 const WHY = [
   { icon:<IconShieldCheck size={22} color="#fff"/>, title:'Every business verified', desc:'Every listing checked before going live' },
   { icon:<IconBrandWhatsapp size={22} color="#fff"/>, title:'WhatsApp booking', desc:'Confirm in minutes, not hours' },
   { icon:<IconLanguage size={22} color="#fff"/>, title:'Af-Soomaali', desc:'Full Somali language support' },
   { icon:<IconCash size={22} color="#fff"/>, title:'Pay in ETB', desc:'Cash, Telebirr or card' },
 ];
-
 const REVIEWS = [
-  { name:'Faadumo A.', stars:5, text:'Qolasha aad bay u nadiifsan yihiin. Shaqaaluhuna waa kuwo xiriir fiican leh.' },
-  { name:'Mohamed H. - London', stars:4, text:'Confirmed on WhatsApp in 20 minutes. Exactly what I needed visiting family.' },
-  { name:'Hodan I. - Minnesota', stars:5, text:'Finally an app for Jigjiga! Paid cash on arrival, no issues at all.' },
+  { name:'Faadumo A.', rating:5, text:'Qolasha aad bay u nadiifsan yihiin. Shaqaaluhuna waa kuwo xiriir fiican leh.' },
+  { name:'Mohamed H. - London', rating:4, text:'Confirmed on WhatsApp in 20 minutes. Exactly what I needed visiting family.' },
+  { name:'Hodan I. - Minnesota', rating:5, text:'Finally an app for Jigjiga! Paid cash on arrival, no issues at all.' },
 ];
+
+function StarRating({ rating, size=12 }) {
+  return (
+    <span style={{ color:'#D4A843', fontSize:size, display:'inline-flex', alignItems:'center', gap:2 }}>
+      <IconStar size={size} fill="#D4A843" color="#D4A843"/> {rating}
+    </span>
+  );
+}
+
+function HotelCard({ h, onClick }) {
+  return (
+    <div onClick={onClick} style={{ background:'#fff', border:'0.5px solid #C8E6D8', borderRadius:12, overflow:'hidden', cursor:'pointer' }}>
+      <div style={{ height:140, overflow:'hidden', position:'relative' }}>
+        <img src={h.photo} alt={h.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+        {h.verified && <span style={{ position:'absolute', top:8, left:8, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'2px 8px', fontSize:9, color:'#1B3A2D', fontWeight:500 }}>Verified</span>}
+      </div>
+      <div style={{ padding:'10px 12px' }}>
+        <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:2 }}>{h.name}</div>
+        <div style={{ fontSize:10, color:'#4D7A65', marginBottom:5, display:'flex', alignItems:'center', gap:3 }}><IconMapPin size={10}/>{h.city}</div>
+        <div style={{ marginBottom:6 }}>{h.amenities.slice(0,3).map(a=><span key={a} style={{ display:'inline-block', background:'#F0F7F4', borderRadius:4, fontSize:9, color:'#1B3A2D', padding:'2px 5px', margin:'1px 2px 1px 0' }}>{a}</span>)}</div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>ETB {h.price.toLocaleString()}<span style={{ fontSize:9, fontWeight:400, color:'#4D7A65' }}>/night</span></span>
+          <StarRating rating={h.rating}/>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function App() {
   const [page, setPage] = useState('home');
@@ -77,41 +140,36 @@ export default function App() {
   const [searchCat, setSearchCat] = useState('Hotels');
   const [searchGuests, setSearchGuests] = useState('2 guests');
   const [activeCat, setActiveCat] = useState('Hotels');
+  const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
 
-  React.useEffect(()=>{
+  useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
-      .then(r=>r.json())
-      .then(data=>{
-        if(data.businesses && data.businesses.length > 0){
-          setDbHotels(data.businesses.map(b=>({
-            id: b._id,
-            name: b.name,
-            city: b.city,
-            price: b.price || 850,
-            rating: b.rating || 0,
-            reviews: b.reviewCount || 0,
-            verified: b.verified,
+      .then(r => r.json())
+      .then(data => {
+        if (data.businesses && data.businesses.length > 0) {
+          setDbHotels(data.businesses.map(b => ({
+            id: b._id, name: b.name, city: b.city,
+            price: b.price || 850, rating: b.rating || 0,
+            reviews: b.reviewCount || 0, verified: b.verified,
             amenities: b.amenities && b.amenities.length > 0 ? b.amenities : ['WiFi'],
             photo: b.photos && b.photos.length > 0 ? b.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
-            desc: b.description || ''
+            desc: b.description || '',
+            phone: b.phone || '',
+            rooms: b.rooms || []
           })));
         }
-      })
-      .catch(err=>console.error('Failed to load businesses:', err));
-  },[]);
+      }).catch(() => {});
+  }, []);
 
   const allHotels = [...HOTELS, ...dbHotels];
-  const featuredHotels = allHotels.slice(0, 8);
-  const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
-
   const filtered = allHotels.filter(h => searchCity === 'All cities' || h.city === searchCity);
 
-  const rooms = (h) => h ? (h.rooms || [
-    { type:'standard', name:'Standard room', price:h.price, beds:'Double bed - AC - en-suite', popular:false },
-    { type:'deluxe', name:'Deluxe room', price:Math.round(h.price*1.6), beds:'King bed - city view - minibar', popular:true },
-    { type:'family', name:'Family suite', price:Math.round(h.price*2.5), beds:'2 rooms - sleeps 5 - kitchenette', popular:false },
-  ]) : [];
+  const getRooms = (h) => h.rooms && h.rooms.length > 0 ? h.rooms : [
+    { type:'standard', name:'Standard Room', price:h.price, beds:'Double bed, AC, en-suite bathroom', popular:false },
+    { type:'deluxe', name:'Deluxe Room', price:Math.round(h.price*1.6), beds:'King bed, city view, minibar', popular:true },
+    { type:'family', name:'Family Suite', price:Math.round(h.price*2.5), beds:'2 rooms, sleeps 5, kitchenette', popular:false },
+  ];
 
   const nights = () => {
     if (!bookForm.checkin || !bookForm.checkout) return 1;
@@ -123,29 +181,21 @@ export default function App() {
     e.preventDefault();
     try {
       const res = await fetch('https://ogso-production.up.railway.app/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          hotelId: selectedHotel.id,
-          businessId: selectedHotel.id,
-          roomType: selectedRoom.type,
-          roomName: selectedRoom.name,
+          hotelId: selectedHotel.id, businessId: selectedHotel.id,
+          roomType: selectedRoom.type, roomName: selectedRoom.name,
           pricePerNight: selectedRoom.price,
-          checkIn: bookForm.checkin,
-          checkOut: bookForm.checkout,
-          guests: bookForm.guests,
-          guestName: bookForm.name,
-          guestPhone: bookForm.phone,
-          notes: bookForm.notes,
+          checkIn: bookForm.checkin, checkOut: bookForm.checkout,
+          guests: bookForm.guests, guestName: bookForm.name,
+          guestPhone: bookForm.phone, notes: bookForm.notes,
           paymentMethod: bookForm.payment,
         })
       });
       const data = await res.json();
-      const booking = data.booking;
-      setBookingDone({ ref: booking.ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
+      setBookingDone({ ref: data.booking.ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
       setPage('confirm');
     } catch (err) {
-      console.error('Booking error:', err);
       const ref = Math.random().toString(36).substr(2,8).toUpperCase();
       setBookingDone({ ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
       setPage('confirm');
@@ -174,16 +224,6 @@ export default function App() {
     sec:{ padding:'16px' },
     stit:{ fontSize:15, fontWeight:500, color:'#1B3A2D', marginBottom:12 },
     grid:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:14 },
-    hcard:{ background:'#fff', border:'0.5px solid #C8E6D8', borderRadius:12, overflow:'hidden', cursor:'pointer', transition:'box-shadow .2s' },
-    himg:{ height:140, overflow:'hidden', position:'relative' },
-    vbadge:{ position:'absolute', top:8, left:8, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 8px', fontSize:9, color:'#1B3A2D', fontWeight:500, zIndex:1 },
-    hbody:{ padding:'10px 12px' },
-    hname:{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:2 },
-    hloc:{ fontSize:10, color:'#4D7A65', marginBottom:5, display:'flex', alignItems:'center', gap:3 },
-    hrow:{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:6 },
-    hpr:{ fontSize:13, fontWeight:500, color:'#1B3A2D' },
-    hrt:{ fontSize:11, color:'#D4A843', display:'flex', alignItems:'center', gap:2 },
-    tag:{ display:'inline-block', background:'#F0F7F4', borderRadius:4, fontSize:10, color:'#1B3A2D', padding:'2px 6px', margin:'1px 2px 1px 0' },
     goldBanner:{ background:'#FDF3DC', borderTop:'0.5px solid #E8D090', borderBottom:'0.5px solid #E8D090', padding:'16px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:10 },
     goldBtn:{ background:'#D4A843', border:'none', borderRadius:8, padding:'8px 16px', fontSize:12, fontWeight:500, color:'#1B3A2D', cursor:'pointer' },
     whyGrid:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))', gap:10 },
@@ -191,7 +231,7 @@ export default function App() {
     whyIcon:{ width:40, height:40, borderRadius:10, background:'#2D6A4F', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10 },
     terrGrid:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))', gap:8 },
     footer:{ background:'#1B3A2D', padding:'20px 16px', textAlign:'center', fontSize:11, color:'#52B788', marginTop:8 },
-    dhero:{ height:240, overflow:'hidden', position:'relative' },
+    dhero:{ height:220, overflow:'hidden', position:'relative' },
     backBtn:{ position:'absolute', top:10, left:12, background:'rgba(0,0,0,0.4)', border:'none', borderRadius:20, padding:'6px 14px', color:'#fff', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:4, zIndex:2 },
     rcard:{ border:'0.5px solid #C8E6D8', borderRadius:10, padding:'11px 13px', marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', background:'#fff' },
     rcardSel:{ borderColor:'#2D6A4F', background:'#F0F7F4' },
@@ -229,23 +269,9 @@ export default function App() {
     </nav>
   );
 
-  const HotelCard = ({h, onClick}) => (
-    <div style={c.hcard} onClick={onClick}>
-      <div style={c.himg}>
-        <img src={h.photo} alt={h.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-        {h.verified && <span style={c.vbadge}>Verified</span>}
-      </div>
-      <div style={c.hbody}>
-        <div style={c.hname}>{h.name}</div>
-        <div style={c.hloc}><IconMapPin size={10}/>{h.city}</div>
-        <div>{h.amenities.slice(0,3).map(a=><span key={a} style={c.tag}>{a}</span>)}</div>
-        <div style={c.hrow}>
-          <span style={c.hpr}>ETB {h.price.toLocaleString()}<span style={{fontSize:9,fontWeight:400,color:'#4D7A65'}}>/night</span></span>
-          <span style={c.hrt}><IconStar size={11} fill="#D4A843" color="#D4A843"/>{h.rating}</span>
-        </div>
-      </div>
-    </div>
-  );
+  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>;
+  if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
+  if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
 
   if (page === 'home') return (
     <div>
@@ -311,27 +337,27 @@ export default function App() {
         <div style={c.stit}>Featured hotels in Jigjiga</div>
         <div style={c.grid}>
           {allHotels.map(h=>(
-            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(rooms(h)[1]);setPage('detail');}}/>
+            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>
           ))}
         </div>
       </div>
 
       <div style={c.goldBanner}>
         <div>
-          <div style={{fontFamily:'Georgia,serif',fontSize:15,fontWeight:700,color:'#1B3A2D'}}>Are you a business owner?</div>
-          <div style={{fontSize:11,color:'#4D7A65',marginTop:2}}>List your business free and reach thousands of customers</div>
+          <div style={{ fontFamily:'Georgia,serif', fontSize:15, fontWeight:700, color:'#1B3A2D' }}>Are you a business owner?</div>
+          <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>List your business free and reach thousands of customers</div>
         </div>
         <button style={c.goldBtn} onClick={()=>setPage('list')}>List for free</button>
       </div>
 
-      <div style={{...c.sec,background:'#F8F4EC'}}>
+      <div style={{...c.sec, background:'#F8F4EC'}}>
         <div style={c.stit}>Why Ogso?</div>
         <div style={c.whyGrid}>
           {WHY.map(w=>(
             <div key={w.title} style={c.whyCard}>
               <div style={c.whyIcon}>{w.icon}</div>
-              <div style={{fontSize:12,fontWeight:500,color:'#1B3A2D',marginBottom:4}}>{w.title}</div>
-              <div style={{fontSize:11,color:'#4D7A65',lineHeight:1.5}}>{w.desc}</div>
+              <div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D', marginBottom:4 }}>{w.title}</div>
+              <div style={{ fontSize:11, color:'#4D7A65', lineHeight:1.5 }}>{w.desc}</div>
             </div>
           ))}
         </div>
@@ -341,81 +367,77 @@ export default function App() {
         <div style={c.stit}>5 territories. 25 million people. One platform.</div>
         <div style={c.terrGrid}>
           {TERRITORIES.map(t=>(
-            <div key={t.name} style={{background:t.active?'#2D6A4F':'#F8F4EC',border:'0.5px solid #C8E6D8',borderRadius:10,padding:12,textAlign:'center'}}>
-              <div style={{fontSize:11,fontWeight:500,color:t.active?'#fff':'#1B3A2D'}}>{t.name}</div>
-              <div style={{fontSize:9,color:t.active?'#A8D5BE':'#4D7A65',marginTop:3}}>{t.sub}</div>
+            <div key={t.name} style={{ background:t.active?'#2D6A4F':'#F8F4EC', border:'0.5px solid #C8E6D8', borderRadius:10, padding:12, textAlign:'center' }}>
+              <div style={{ fontSize:11, fontWeight:500, color:t.active?'#fff':'#1B3A2D' }}>{t.name}</div>
+              <div style={{ fontSize:9, color:t.active?'#A8D5BE':'#4D7A65', marginTop:3 }}>{t.sub}</div>
             </div>
           ))}
         </div>
       </div>
+
       <footer style={c.footer}>
-        2026 Ogso - Every business, verified.
-        <span style={{cursor:'pointer',color:'#52B788',marginLeft:8,fontSize:10}} onClick={()=>setPage('admin')}>*</span>
+        2026 Ogso - Every business, verified. - Built for the Somali world
+        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
       </footer>
     </div>
   );
 
-  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(rooms(h)[1]);setPage('detail');}}/>;
-     
   if (page === 'detail' && selectedHotel) return (
     <div>
       <Nav/>
       <div style={c.dhero}>
-        <img src={selectedHotel.photo} alt={selectedHotel.name} style={{width:'100%',height:'100%',objectFit:'cover'}}/>
-        <button style={c.backBtn} onClick={()=>setPage('home')}>
-          <IconArrowLeft size={13}/> Back
-        </button>
-        {selectedHotel.verified && <span style={{...c.vbadge,position:'absolute',top:10,right:12,fontSize:10,zIndex:2}}>Verified</span>}
-        <div style={{position:'absolute',bottom:10,right:12,background:'rgba(0,0,0,0.4)',borderRadius:20,padding:'3px 9px',fontSize:10,color:'#fff',zIndex:2}}>12 photos</div>
+        <img src={selectedHotel.photo} alt={selectedHotel.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+        <button style={c.backBtn} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
+        {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
       </div>
-      <div style={{padding:'14px 16px'}}>
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
-          <div style={{fontSize:20,fontWeight:500,color:'#1B3A2D'}}>{selectedHotel.name}</div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:20,fontWeight:500,color:'#1B3A2D'}}>{selectedHotel.rating}</div>
-            <div style={{fontSize:12,color:'#D4A843'}}>ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦</div>
-            <div style={{fontSize:10,color:'#4D7A65'}}>{selectedHotel.reviews} reviews</div>
+      <div style={{ padding:'14px 16px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:4 }}>
+          <div style={{ fontSize:20, fontWeight:500, color:'#1B3A2D', flex:1 }}>{selectedHotel.name}</div>
+          <div style={{ textAlign:'right', marginLeft:12 }}>
+            <div style={{ fontSize:20, fontWeight:500, color:'#1B3A2D' }}>{selectedHotel.rating}</div>
+            <StarRating rating={selectedHotel.rating} size={11}/>
+            <div style={{ fontSize:10, color:'#4D7A65' }}>{selectedHotel.reviews} reviews</div>
           </div>
         </div>
-        <div style={{fontSize:11,color:'#4D7A65',marginBottom:12,display:'flex',alignItems:'center',gap:4}}>
+        <div style={{ fontSize:11, color:'#4D7A65', marginBottom:12, display:'flex', alignItems:'center', gap:4 }}>
           <IconMapPin size={12}/>{selectedHotel.city} - Somali Region
         </div>
-        <div style={{marginBottom:14}}>
+        <div style={{ marginBottom:14 }}>
           {selectedHotel.amenities.map(a=>(
-            <span key={a} style={{display:'inline-flex',alignItems:'center',gap:4,background:'#F0F7F4',borderRadius:20,padding:'4px 10px',fontSize:11,color:'#1B3A2D',margin:'2px 3px 2px 0'}}>{a}</span>
+            <span key={a} style={{ display:'inline-flex', alignItems:'center', gap:4, background:'#F0F7F4', borderRadius:20, padding:'4px 10px', fontSize:11, color:'#1B3A2D', margin:'2px 3px 2px 0' }}>{a}</span>
           ))}
         </div>
-        <div style={{fontSize:12,color:'#4D7A65',marginBottom:14,lineHeight:1.6}}>{selectedHotel.desc}</div>
+        <div style={{ fontSize:12, color:'#4D7A65', marginBottom:14, lineHeight:1.6 }}>{selectedHotel.desc}</div>
 
-        <div style={{fontSize:14,fontWeight:500,color:'#1B3A2D',marginBottom:10}}>Choose your room</div>
-        {rooms(selectedHotel).map(r=>(
+        <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
+        {getRooms(selectedHotel).map(r=>(
           <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
             <div>
-              <div style={{display:'flex',alignItems:'center',gap:6}}>
-                <span style={{fontSize:13,fontWeight:500,color:'#1B3A2D'}}>{r.name}</span>
-                {r.popular && <span style={{background:'#2D6A4F',color:'#fff',fontSize:9,padding:'2px 6px',borderRadius:4}}>Popular</span>}
+              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
+                {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
               </div>
-              <div style={{fontSize:11,color:'#4D7A65',marginTop:2}}>{r.beds}</div>
+              <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>{r.beds}</div>
             </div>
-            <div style={{textAlign:'right'}}>
-              <div style={{fontSize:14,fontWeight:500,color:'#1B3A2D'}}>ETB {r.price.toLocaleString()}</div>
-              <div style={{fontSize:10,color:'#4D7A65'}}>/night</div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D' }}>ETB {r.price.toLocaleString()}</div>
+              <div style={{ fontSize:10, color:'#4D7A65' }}>/night</div>
             </div>
           </div>
         ))}
 
-        <div style={{fontSize:14,fontWeight:500,color:'#1B3A2D',margin:'16px 0 8px'}}>Guest reviews</div>
+        <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', margin:'16px 0 8px' }}>Guest reviews</div>
         {REVIEWS.map((r,i)=>(
           <div key={i} style={c.rvcard}>
-            <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
-              <span style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{r.name}</span>
-              <span style={{fontSize:11,color:'#D4A843'}}>('★ '.repeat(r.stars))</span>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+              <span style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
+              <StarRating rating={r.rating} size={11}/>
             </div>
-            <div style={{fontSize:12,color:'#4D7A65',lineHeight:1.5}}>{r.text}</div>
+            <div style={{ fontSize:12, color:'#4D7A65', lineHeight:1.5 }}>{r.text}</div>
           </div>
         ))}
 
-        <button style={{...c.pbtn,marginTop:16}} onClick={()=>setPage('booking')}>
+        <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
         <button style={c.obtn}>Enquire directly</button>
@@ -427,13 +449,13 @@ export default function App() {
   if (page === 'booking' && selectedHotel) return (
     <div>
       <Nav/>
-      <div style={{maxWidth:600,margin:'0 auto',padding:'20px 16px'}}>
-        <h1 style={{fontFamily:'Georgia,serif',fontSize:20,marginBottom:4,color:'#1B3A2D'}}>Complete your booking</h1>
-        <p style={{fontSize:12,color:'#4D7A65',marginBottom:18}}>{selectedHotel.name} - {selectedRoom?.name}</p>
+      <div style={{ maxWidth:600, margin:'0 auto', padding:'20px 16px' }}>
+        <h1 style={{ fontFamily:'Georgia,serif', fontSize:20, marginBottom:4, color:'#1B3A2D' }}>Complete your booking</h1>
+        <p style={{ fontSize:12, color:'#4D7A65', marginBottom:18 }}>{selectedHotel.name} - {selectedRoom?.name}</p>
         <form onSubmit={handleBook}>
           <div style={c.formCard}>
-            <div style={{fontSize:13,fontWeight:500,color:'#1B3A2D',marginBottom:12}}>Your stay</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+            <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:12 }}>Your stay</div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:8 }}>
               <div>
                 <div style={c.formLabel}>Check-in</div>
                 <input type="date" style={c.formInput} value={bookForm.checkin} onChange={e=>setBookForm({...bookForm,checkin:e.target.value})} required/>
@@ -450,33 +472,33 @@ export default function App() {
           </div>
 
           <div style={c.formCard}>
-            <div style={{fontSize:13,fontWeight:500,color:'#1B3A2D',marginBottom:12}}>Your details</div>
+            <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:12 }}>Your details</div>
             <div style={c.formLabel}>Full name</div>
             <input style={c.formInput} placeholder="Faadumo Ahmed" value={bookForm.name} onChange={e=>setBookForm({...bookForm,name:e.target.value})} required/>
             <div style={c.formLabel}>WhatsApp number</div>
             <input style={c.formInput} placeholder="+251 9XX XXX XXX" value={bookForm.phone} onChange={e=>setBookForm({...bookForm,phone:e.target.value})} required/>
             <div style={c.formLabel}>Special requests (optional)</div>
-            <textarea style={{...c.formInput,resize:'none'}} rows={2} placeholder="Early check-in, ground floor..." value={bookForm.notes} onChange={e=>setBookForm({...bookForm,notes:e.target.value})}/>
+            <textarea style={{...c.formInput, resize:'none'}} rows={2} placeholder="Early check-in, ground floor..." value={bookForm.notes} onChange={e=>setBookForm({...bookForm,notes:e.target.value})}/>
           </div>
 
           <div style={c.formCard}>
-            <div style={{fontSize:13,fontWeight:500,color:'#1B3A2D',marginBottom:12}}>Payment method</div>
+            <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:12 }}>Payment method</div>
             {[{v:'cash',l:'Cash on arrival'},{v:'telebirr',l:'Telebirr'},{v:'card',l:'Card on arrival'}].map(opt=>(
               <label key={opt.v} style={c.radioRow}>
                 <input type="radio" name="payment" value={opt.v} checked={bookForm.payment===opt.v} onChange={()=>setBookForm({...bookForm,payment:opt.v})}/>
-                <span style={{fontSize:13,color:'#1B3A2D'}}>{opt.l}</span>
+                <span style={{ fontSize:13, color:'#1B3A2D' }}>{opt.l}</span>
               </label>
             ))}
           </div>
 
-          <div style={{background:'#F8F4EC',border:'0.5px solid #C8E6D8',borderRadius:12,padding:14,marginBottom:12}}>
-            <div style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'#4D7A65',marginBottom:6}}>
+          <div style={{ background:'#F8F4EC', border:'0.5px solid #C8E6D8', borderRadius:12, padding:14, marginBottom:12 }}>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:12, color:'#4D7A65', marginBottom:6 }}>
               <span>ETB {selectedRoom?.price.toLocaleString()} x {nights()} night{nights()>1?'s':''}</span>
               <span>ETB {(selectedRoom?.price*nights()).toLocaleString()}</span>
             </div>
-            <div style={{borderTop:'0.5px solid #C8E6D8',paddingTop:10,display:'flex',justifyContent:'space-between'}}>
-              <span style={{fontWeight:500,color:'#1B3A2D'}}>Total</span>
-              <span style={{fontSize:17,fontWeight:500,color:'#1B3A2D'}}>ETB {(selectedRoom?.price*nights()).toLocaleString()}</span>
+            <div style={{ borderTop:'0.5px solid #C8E6D8', paddingTop:10, display:'flex', justifyContent:'space-between' }}>
+              <span style={{ fontWeight:500, color:'#1B3A2D' }}>Total</span>
+              <span style={{ fontSize:17, fontWeight:500, color:'#1B3A2D' }}>ETB {(selectedRoom?.price*nights()).toLocaleString()}</span>
             </div>
           </div>
 
@@ -493,51 +515,38 @@ export default function App() {
   if (page === 'confirm' && bookingDone) return (
     <div>
       <Nav/>
-      <div style={{maxWidth:560,margin:'0 auto',padding:'30px 16px'}}>
-        <div style={{textAlign:'center',paddingBottom:18,borderBottom:'0.5px solid #C8E6D8'}}>
-          <div style={c.confIcon}>
-            <IconCheck size={30} color="#2D6A4F"/>
-          </div>
-          <h1 style={{fontFamily:'Georgia,serif',fontSize:22,color:'#1B3A2D',marginBottom:6}}>Booking confirmed!</h1>
-          <p style={{fontSize:12,color:'#4D7A65'}}>The hotel will contact you on WhatsApp within 2 hours.</p>
+      <div style={{ maxWidth:560, margin:'0 auto', padding:'30px 16px' }}>
+        <div style={{ textAlign:'center', paddingBottom:18, borderBottom:'0.5px solid #C8E6D8' }}>
+          <div style={c.confIcon}><IconCheck size={30} color="#2D6A4F"/></div>
+          <h1 style={{ fontFamily:'Georgia,serif', fontSize:22, color:'#1B3A2D', marginBottom:6 }}>Booking confirmed!</h1>
+          <p style={{ fontSize:12, color:'#4D7A65' }}>The hotel will contact you on WhatsApp within 2 hours.</p>
         </div>
         <div style={c.confCard}>
-          <div style={{fontSize:10,color:'#4D7A65',marginBottom:4}}>Booking reference</div>
-          <div style={{fontFamily:'Georgia,serif',fontSize:24,fontWeight:700,letterSpacing:3,color:'#1B3A2D',marginBottom:12}}>{bookingDone.ref}</div>
+          <div style={{ fontSize:10, color:'#4D7A65', marginBottom:4 }}>Booking reference</div>
+          <div style={{ fontFamily:'Georgia,serif', fontSize:24, fontWeight:700, letterSpacing:3, color:'#1B3A2D', marginBottom:12 }}>{bookingDone.ref}</div>
           <div style={c.confGrid}>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Hotel</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.hotel.name}</div></div>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Room</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.room.name}</div></div>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Check-in</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.form.checkin||'Not set'}</div></div>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Check-out</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.form.checkout||'Not set'}</div></div>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Guests</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.form.guests} adults</div></div>
-            <div><div style={{fontSize:10,color:'#4D7A65',marginBottom:2}}>Payment</div><div style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{bookingDone.form.payment}</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Hotel</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.hotel.name}</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Room</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.room.name}</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Check-in</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.form.checkin||'Not set'}</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Check-out</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.form.checkout||'Not set'}</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Guests</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.form.guests} adults</div></div>
+            <div><div style={{ fontSize:10, color:'#4D7A65', marginBottom:2 }}>Payment</div><div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{bookingDone.form.payment}</div></div>
           </div>
-          <div style={{borderTop:'0.5px solid #C8E6D8',marginTop:12,paddingTop:10,display:'flex',justifyContent:'space-between'}}>
-            <span style={{fontSize:12,color:'#4D7A65'}}>Total ({bookingDone.nights} nights)</span>
-            <span style={{fontSize:16,fontWeight:500,color:'#1B3A2D'}}>ETB {bookingDone.total.toLocaleString()}</span>
+          <div style={{ borderTop:'0.5px solid #C8E6D8', marginTop:12, paddingTop:10, display:'flex', justifyContent:'space-between' }}>
+            <span style={{ fontSize:12, color:'#4D7A65' }}>Total ({bookingDone.nights} nights)</span>
+            <span style={{ fontSize:16, fontWeight:500, color:'#1B3A2D' }}>ETB {bookingDone.total.toLocaleString()}</span>
           </div>
         </div>
         <div style={c.waBanner}>
           <IconBrandWhatsapp size={22} color="#2D6A4F"/>
-          <div style={{fontSize:12,color:'#1B3A2D',lineHeight:1.5}}>A WhatsApp confirmation and the hotel's direct number have been sent to {bookingDone.form.phone||'your phone'}.</div>
+          <div style={{ fontSize:12, color:'#1B3A2D', lineHeight:1.5 }}>A WhatsApp confirmation and the hotel's direct number have been sent to {bookingDone.form.phone||'your phone'}.</div>
         </div>
         <button style={c.pbtn} onClick={()=>setPage('home')}>Back to home</button>
-        <button style={{...c.obtn,marginTop:8}} onClick={()=>setPage('search')}>Browse more hotels</button>
+        <button style={{...c.obtn, marginTop:8}} onClick={()=>setPage('search')}>Browse more hotels</button>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
     </div>
   );
 
-if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
-
- if (page === 'admin') {
-  const pwd = prompt('Enter admin password:');
-  if (pwd !== 'Ogso2026!') {
-    setPage('home');
-    return null;
-  }
-  return <AdminPage onBack={()=>setPage('home')}/>;
-}
   return null;
-
 }
