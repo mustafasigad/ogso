@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { IconStar, IconCheck } from '@tabler/icons-react';
 
 const API = 'https://ogso-production.up.railway.app/api';
@@ -36,6 +36,7 @@ export default function ReviewSection({ hotelId, hotelName }) {
 
   useEffect(() => {
     if (!hotelId) return;
+    if (hotelId.length < 20) { setLoading(false); return; }
     fetch(`${API}/reviews/${hotelId}`)
       .then(r => r.json())
       .then(data => { setReviews(Array.isArray(data) ? data : []); setLoading(false); })
@@ -168,3 +169,4 @@ export default function ReviewSection({ hotelId, hotelName }) {
     </div>
   );
 }
+
