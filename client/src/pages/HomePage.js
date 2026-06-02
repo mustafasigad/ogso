@@ -373,7 +373,7 @@ export default function App() {
           <div style={{fontSize:20,fontWeight:500,color:'#1B3A2D'}}>{selectedHotel.name}</div>
           <div style={{textAlign:'right'}}>
             <div style={{fontSize:20,fontWeight:500,color:'#1B3A2D'}}>{selectedHotel.rating}</div>
-            <div style={{fontSize:12,color:'#D4A843'}}>Ã¢Ëœâ€¦Ã¢Ëœâ€¦Ã¢Ëœâ€¦Ã¢Ëœâ€¦Ã¢Ëœâ€¦</div>
+            <div style={{fontSize:12,color:'#D4A843'}}>ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦ÃƒÂ¢Ã‹Å“Ã¢â‚¬Â¦</div>
             <div style={{fontSize:10,color:'#4D7A65'}}>{selectedHotel.reviews} reviews</div>
           </div>
         </div>
@@ -409,7 +409,7 @@ export default function App() {
           <div key={i} style={c.rvcard}>
             <div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}>
               <span style={{fontSize:12,fontWeight:500,color:'#1B3A2D'}}>{r.name}</span>
-              <span style={{fontSize:11,color:'#D4A843'}}>{'Ã¢Ëœâ€¦'.repeat(r.stars)}</span>
+              <span style={{fontSize:11,color:'#D4A843'}}>('★ '.repeat(r.stars))</span>
             </div>
             <div style={{fontSize:12,color:'#4D7A65',lineHeight:1.5}}>{r.text}</div>
           </div>
