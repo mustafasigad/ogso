@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IconStar, IconCheck } from '@tabler/icons-react';
 
 const API = 'https://ogso-production.up.railway.app/api';
@@ -34,14 +34,16 @@ export default function ReviewSection({ hotelId, hotelName }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!hotelId) return;
-    if (hotelId.length < 20) { setLoading(false); return; }
-    fetch(`${API}/reviews/${hotelId}`)
-      .then(r => r.json())
-      .then(data => { setReviews(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [hotelId]);
+  
+
+useEffect(() => {
+  if (!hotelId) return;
+  if (hotelId.length < 20) { setLoading(false); return; }
+  fetch(`${API}/reviews/${hotelId}`)
+    .then(r => r.json())
+    .then(data => { setReviews(Array.isArray(data) ? data : []); setLoading(false); })
+    .catch(() => setLoading(false));
+}, [hotelId]);
 
   const submit = async () => {
     if (!form.name) { setError('Please enter your name'); return; }
@@ -169,4 +171,3 @@ export default function ReviewSection({ hotelId, hotelName }) {
     </div>
   );
 }
-

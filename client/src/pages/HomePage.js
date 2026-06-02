@@ -3,12 +3,12 @@ import {
   IconBuilding, IconToolsKitchen2, IconHeartRateMonitor,
   IconShoppingBag, IconCar, IconCash, IconShieldCheck,
   IconBrandWhatsapp, IconLanguage, IconMapPin, IconStar,
-  IconSearch, IconArrowLeft, IconCheck
+  IconSearch, IconArrowLeft, IconCheck, IconAdjustmentsHorizontal
 } from '@tabler/icons-react';
+import ReviewSection from '../components/common/ReviewSection';
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
-import ReviewSection from '../components/common/ReviewSection';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
@@ -98,6 +98,11 @@ const WHY = [
   { icon:<IconLanguage size={22} color="#fff"/>, title:'Af-Soomaali', desc:'Full Somali language support' },
   { icon:<IconCash size={22} color="#fff"/>, title:'Pay in ETB', desc:'Cash, Telebirr or card' },
 ];
+const REVIEWS = [
+  { name:'Faadumo A.', rating:5, text:'Qolasha aad bay u nadiifsan yihiin. Shaqaaluhuna waa kuwo xiriir fiican leh.' },
+  { name:'Mohamed H. - London', rating:4, text:'Confirmed on WhatsApp in 20 minutes. Exactly what I needed visiting family.' },
+  { name:'Hodan I. - Minnesota', rating:5, text:'Finally an app for Jigjiga! Paid cash on arrival, no issues at all.' },
+];
 
 function StarRating({ rating, size=12 }) {
   return (
@@ -159,6 +164,7 @@ export default function App() {
   }, []);
 
   const allHotels = [...HOTELS, ...dbHotels];
+  const filtered = allHotels.filter(h => searchCity === 'All cities' || h.city === searchCity);
 
   const getRooms = (h) => h.rooms && h.rooms.length > 0 ? h.rooms : [
     { type:'standard', name:'Standard Room', price:h.price, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -178,19 +184,13 @@ export default function App() {
       const res = await fetch('https://ogso-production.up.railway.app/api/bookings', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          hotelId: selectedHotel.id,
-          businessId: selectedHotel.id,
+          hotelId: selectedHotel.id, businessId: selectedHotel.id,
           hotelName: selectedHotel.name,
-          hotelPhone: selectedHotel.phone,
-          roomType: selectedRoom.type,
-          roomName: selectedRoom.name,
+          roomType: selectedRoom.type, roomName: selectedRoom.name,
           pricePerNight: selectedRoom.price,
-          checkIn: bookForm.checkin,
-          checkOut: bookForm.checkout,
-          guests: bookForm.guests,
-          guestName: bookForm.name,
-          guestPhone: bookForm.phone,
-          notes: bookForm.notes,
+          checkIn: bookForm.checkin, checkOut: bookForm.checkout,
+          guests: bookForm.guests, guestName: bookForm.name,
+          guestPhone: bookForm.phone, notes: bookForm.notes,
           paymentMethod: bookForm.payment,
         })
       });
@@ -237,6 +237,7 @@ export default function App() {
     backBtn:{ position:'absolute', top:10, left:12, background:'rgba(0,0,0,0.4)', border:'none', borderRadius:20, padding:'6px 14px', color:'#fff', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:4, zIndex:2 },
     rcard:{ border:'0.5px solid #C8E6D8', borderRadius:10, padding:'11px 13px', marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', background:'#fff' },
     rcardSel:{ borderColor:'#2D6A4F', background:'#F0F7F4' },
+    rvcard:{ background:'#F0F7F4', borderRadius:10, padding:'10px 12px', marginBottom:8 },
     pbtn:{ width:'100%', padding:12, background:'#2D6A4F', border:'none', borderRadius:10, color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'center', gap:6 },
     obtn:{ width:'100%', padding:10, background:'transparent', border:'1px solid #2D6A4F', borderRadius:10, color:'#2D6A4F', fontSize:12, cursor:'pointer' },
     formCard:{ background:'#F8F4EC', borderRadius:12, padding:14, marginBottom:10 },
@@ -376,10 +377,10 @@ export default function App() {
         </div>
       </div>
 
-      <footer style={c.footer}>
-        2026 Ogso - Every business, verified. - Built for the Somali world
-        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
-      </footer>
+     <footer style={c.footer}>
+  2026 Ogso - Every business, verified. - Built for the Somali world
+  <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
+</footer>
     </div>
   );
 
@@ -412,7 +413,7 @@ export default function App() {
 
         <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
         {getRooms(selectedHotel).map(r=>(
-          <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?{ borderColor:'#2D6A4F', background:'#F0F7F4' }:{})}} onClick={()=>setSelectedRoom(r)}>
+          <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
             <div>
               <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
@@ -427,7 +428,9 @@ export default function App() {
           </div>
         ))}
 
-        <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
+        
+         <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
+        
 
         <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
