@@ -375,10 +375,10 @@ export default function App() {
         </div>
       </div>
 
-      <footer style={c.footer}>
-        2026 Ogso - Every business, verified. - Built for the Somali world
-        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
-      </footer>
+     <footer style={c.footer}>
+  2026 Ogso - Every business, verified. - Built for the Somali world
+  <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
+</footer>
     </div>
   );
 
