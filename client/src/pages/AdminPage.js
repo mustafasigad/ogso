@@ -2,15 +2,29 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   IconBuilding, IconCalendar, IconShieldCheck, IconShieldX,
   IconTrash, IconEdit, IconCheck, IconX,
-  IconRefresh, IconCurrencyDollar, IconPlus, IconArrowLeft, IconEye
+  IconRefresh, IconCurrencyDollar, IconPlus, IconArrowLeft, IconEye,
+  IconPhoto
 } from '@tabler/icons-react';
+import { initializeApp, getApps } from 'firebase/app';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 
 const API = 'https://ogso-production.up.railway.app/api';
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+};
+
+if (!getApps().length) initializeApp(firebaseConfig);
 
 const EMPTY_FORM = {
   name:'', category:'hotel', city:'Jigjiga', territory:'ET-SO',
   address:'', phone:'', whatsapp:'', email:'',
-  description:'', photos:'', amenities:'',
+  description:'', photos:[], amenities:'',
   price:'', verified:false, featured:false, plan:'free',
   rooms:[
     { type:'standard', name:'Standard Room', price:'', beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -18,7 +32,7 @@ const EMPTY_FORM = {
   ]
 };
 
-const s = {
+const fs = {
   formCard:{ background:'#fff', borderRadius:12, border:'0.5px solid #C8E6D8', padding:16, marginBottom:14 },
   formLabel:{ fontSize:11, color:'#4D7A65', marginBottom:3, display:'block' },
   formInput:{ width:'100%', padding:'9px 11px', border:'0.5px solid #C8E6D8', borderRadius:8, fontSize:13, color:'#1B3A2D', marginBottom:12, background:'#fff', boxSizing:'border-box', outline:'none' },
@@ -27,7 +41,82 @@ const s = {
   roomCard:{ background:'#F8F4EC', borderRadius:10, padding:12, marginBottom:10, border:'0.5px solid #C8E6D8' },
 };
 
-// ── Form component at TOP LEVEL — fixes cursor jumping ──
+function PhotoUpload({ photos, onUpdate }) {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [urlInput, setUrlInput] = useState('');
+  const [error, setError] = useState('');
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Please select an image file'); return; }
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5MB'); return; }
+    setError(''); setUploading(true); setProgress(0);
+    try {
+      const storage = getStorage();
+      const filename = `ogso/hotels/${Date.now()}-${file.name.replace(/\s/g,'_')}`;
+      const storageRef = ref(storage, filename);
+      const task = uploadBytesResumable(storageRef, file);
+      task.on('state_changed',
+        snap => setProgress(Math.round(snap.bytesTransferred/snap.totalBytes*100)),
+        err => { setError('Upload failed: '+err.message); setUploading(false); },
+        async () => {
+          const url = await getDownloadURL(task.snapshot.ref);
+          onUpdate([...photos, url]);
+          setUploading(false); setProgress(0);
+        }
+      );
+    } catch (err) { setError('Upload failed'); setUploading(false); }
+  };
+
+  const addUrl = () => {
+    if (!urlInput.trim()) return;
+    onUpdate([...photos, urlInput.trim()]);
+    setUrlInput('');
+  };
+
+  const removePhoto = (i) => onUpdate(photos.filter((_,idx) => idx !== i));
+
+  return (
+    <div style={{ marginBottom:12 }}>
+      <label style={fs.formLabel}>Photos</label>
+      {photos.length > 0 && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))', gap:8, marginBottom:8 }}>
+          {photos.map((url,i) => (
+            <div key={i} style={{ position:'relative', height:80, borderRadius:8, overflow:'hidden', border:'0.5px solid #C8E6D8' }}>
+              <img src={url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+              <button onClick={() => removePhoto(i)}
+                style={{ position:'absolute', top:3, right:3, background:'rgba(0,0,0,0.5)', border:'none', borderRadius:'50%', width:20, height:20, color:'#fff', cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                x
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+      <label style={{ display:'flex', flexDirection:'column', alignItems:'center', border:'1.5px dashed #C8E6D8', borderRadius:8, padding:14, textAlign:'center', cursor:'pointer', background:'#F8F4EC', marginBottom:6 }}>
+        <IconPhoto size={24} color="#4D7A65" style={{ marginBottom:4 }}/>
+        <span style={{ fontSize:12, color:'#4D7A65' }}>{uploading ? `Uploading ${progress}%...` : 'Click to upload photo'}</span>
+        <span style={{ fontSize:10, color:'#4D7A65', marginTop:2 }}>JPG, PNG up to 5MB</span>
+        <input type="file" accept="image/*" style={{ display:'none' }} onChange={handleFile}/>
+      </label>
+      {uploading && (
+        <div style={{ background:'#E8F5EE', borderRadius:4, height:6, overflow:'hidden', marginBottom:6 }}>
+          <div style={{ background:'#2D6A4F', height:'100%', width:`${progress}%`, transition:'width 0.3s' }}/>
+        </div>
+      )}
+      {error && <div style={{ fontSize:11, color:'#C00', marginBottom:6 }}>{error}</div>}
+      <div style={{ display:'flex', gap:6 }}>
+        <input style={{ ...fs.formInput, marginBottom:0, flex:1 }}
+          placeholder="Or paste a photo URL and press Add"
+          value={urlInput} onChange={e => setUrlInput(e.target.value)}
+          onKeyDown={e => e.key==='Enter' && addUrl()}/>
+        <button style={{ background:'#2D6A4F', border:'none', borderRadius:8, padding:'0 14px', color:'#fff', fontSize:12, cursor:'pointer' }} onClick={addUrl}>Add</button>
+      </div>
+    </div>
+  );
+}
+
 function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
   const set = (field, val) => setForm(prev => ({ ...prev, [field]: val }));
   const setRoom = (i, field, val) => setForm(prev => {
@@ -41,7 +130,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
   return (
     <div style={{ maxWidth:700, margin:'0 auto' }}>
       <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
-        <button style={{ ...s.actionBtn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={onCancel}>
+        <button style={{ ...fs.actionBtn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={onCancel}>
           <IconArrowLeft size={13}/> Back
         </button>
         <div style={{ fontSize:16, fontWeight:500, color:'#1B3A2D' }}>{editId ? 'Edit listing' : 'Add new listing'}</div>
@@ -49,17 +138,16 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
 
       {msg && <div style={{ background:msg.includes('Error')?'#FEE':'#E8F5EE', border:`0.5px solid ${msg.includes('Error')?'#F99':'#52B788'}`, borderRadius:8, padding:'10px 14px', fontSize:13, color:msg.includes('Error')?'#C00':'#2D6A4F', marginBottom:14 }}>{msg}</div>}
 
-      <div style={s.formCard}>
+      <div style={fs.formCard}>
         <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D', marginBottom:14 }}>Basic details</div>
-        <div style={s.formGrid}>
+        <div style={fs.formGrid}>
           <div>
-            <label style={s.formLabel}>Business name *</label>
-            <input style={s.formInput} placeholder="e.g. Jigjiga Grand Hotel"
-              value={form.name} onChange={e => set('name', e.target.value)}/>
+            <label style={fs.formLabel}>Business name *</label>
+            <input style={fs.formInput} placeholder="e.g. Jigjiga Grand Hotel" value={form.name} onChange={e => set('name', e.target.value)}/>
           </div>
           <div>
-            <label style={s.formLabel}>Category</label>
-            <select style={s.formInput} value={form.category} onChange={e => set('category', e.target.value)}>
+            <label style={fs.formLabel}>Category</label>
+            <select style={fs.formInput} value={form.category} onChange={e => set('category', e.target.value)}>
               <option value="hotel">Hotel</option>
               <option value="restaurant">Restaurant</option>
               <option value="clinic">Clinic</option>
@@ -70,14 +158,14 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
             </select>
           </div>
           <div>
-            <label style={s.formLabel}>City</label>
-            <select style={s.formInput} value={form.city} onChange={e => set('city', e.target.value)}>
+            <label style={fs.formLabel}>City</label>
+            <select style={fs.formInput} value={form.city} onChange={e => set('city', e.target.value)}>
               {['Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa','Dire Dawa','Harar'].map(c => <option key={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label style={s.formLabel}>Territory</label>
-            <select style={s.formInput} value={form.territory} onChange={e => set('territory', e.target.value)}>
+            <label style={fs.formLabel}>Territory</label>
+            <select style={fs.formInput} value={form.territory} onChange={e => set('territory', e.target.value)}>
               <option value="ET-SO">Somali Region, Ethiopia</option>
               <option value="SO">Somalia</option>
               <option value="SO-SL">Somaliland</option>
@@ -86,81 +174,68 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
             </select>
           </div>
           <div>
-            <label style={s.formLabel}>Phone / WhatsApp *</label>
-            <input style={s.formInput} placeholder="+251 9XX XXX XXX"
-              value={form.phone} onChange={e => { set('phone', e.target.value); set('whatsapp', e.target.value); }}/>
+            <label style={fs.formLabel}>Phone / WhatsApp *</label>
+            <input style={fs.formInput} placeholder="+251 9XX XXX XXX" value={form.phone} onChange={e => { set('phone', e.target.value); set('whatsapp', e.target.value); }}/>
           </div>
           <div>
-            <label style={s.formLabel}>Base price (ETB/night)</label>
-            <input style={s.formInput} type="number" placeholder="850"
-              value={form.price} onChange={e => set('price', e.target.value)}/>
+            <label style={fs.formLabel}>Base price (ETB/night)</label>
+            <input style={fs.formInput} type="number" placeholder="850" value={form.price} onChange={e => set('price', e.target.value)}/>
           </div>
         </div>
-        <label style={s.formLabel}>Address</label>
-        <input style={s.formInput} placeholder="Street, District, City"
-          value={form.address} onChange={e => set('address', e.target.value)}/>
-        <label style={s.formLabel}>Description</label>
-        <textarea style={{ ...s.formInput, resize:'none' }} rows={3}
-          placeholder="Describe the business..."
-          value={form.description} onChange={e => set('description', e.target.value)}/>
-        <label style={s.formLabel}>Amenities (comma separated)</label>
-        <input style={s.formInput} placeholder="WiFi, Breakfast, AC, Parking, Prayer room"
-          value={form.amenities} onChange={e => set('amenities', e.target.value)}/>
-        <label style={s.formLabel}>Photo URLs (one per line)</label>
-        <textarea style={{ ...s.formInput, resize:'none' }} rows={2}
-          placeholder="https://images.unsplash.com/..."
-          value={form.photos} onChange={e => set('photos', e.target.value)}/>
+        <label style={fs.formLabel}>Address</label>
+        <input style={fs.formInput} placeholder="Street, District, City" value={form.address} onChange={e => set('address', e.target.value)}/>
+        <label style={fs.formLabel}>Description</label>
+        <textarea style={{ ...fs.formInput, resize:'none' }} rows={3} placeholder="Describe the business..." value={form.description} onChange={e => set('description', e.target.value)}/>
+        <label style={fs.formLabel}>Amenities (comma separated)</label>
+        <input style={fs.formInput} placeholder="WiFi, Breakfast, AC, Parking, Prayer room" value={form.amenities} onChange={e => set('amenities', e.target.value)}/>
+
+        <PhotoUpload photos={form.photos} onUpdate={urls => set('photos', urls)}/>
+
         <div style={{ display:'flex', gap:20, marginTop:4 }}>
           <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#1B3A2D', cursor:'pointer' }}>
-            <input type="checkbox" checked={form.verified}
-              onChange={e => { set('verified', e.target.checked); set('active', e.target.checked); }}/>
+            <input type="checkbox" checked={form.verified} onChange={e => { set('verified', e.target.checked); set('active', e.target.checked); }}/>
             Verified
           </label>
           <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#1B3A2D', cursor:'pointer' }}>
-            <input type="checkbox" checked={form.featured}
-              onChange={e => set('featured', e.target.checked)}/>
+            <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)}/>
             Featured (shows at top)
           </label>
         </div>
       </div>
 
       {form.category === 'hotel' && (
-        <div style={s.formCard}>
+        <div style={fs.formCard}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
             <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>Room types</div>
-            <button style={{ ...s.actionBtn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={addRoom}>
+            <button style={{ ...fs.actionBtn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={addRoom}>
               <IconPlus size={12}/> Add room
             </button>
           </div>
           {form.rooms.map((r, i) => (
-            <div key={i} style={s.roomCard}>
+            <div key={i} style={fs.roomCard}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
-                <div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>Room {i + 1}</div>
+                <div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>Room {i+1}</div>
                 {form.rooms.length > 1 && (
-                  <button style={{ ...s.actionBtn, background:'#FEE', color:'#C00' }} onClick={() => removeRoom(i)}>
+                  <button style={{ ...fs.actionBtn, background:'#FEE', color:'#C00' }} onClick={() => removeRoom(i)}>
                     <IconTrash size={11}/>
                   </button>
                 )}
               </div>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                 <div>
-                  <label style={s.formLabel}>Room name</label>
-                  <input style={{ ...s.formInput, marginBottom:0 }} placeholder="Deluxe Room"
-                    value={r.name} onChange={e => setRoom(i, 'name', e.target.value)}/>
+                  <label style={fs.formLabel}>Room name</label>
+                  <input style={{ ...fs.formInput, marginBottom:0 }} placeholder="Deluxe Room" value={r.name} onChange={e => setRoom(i,'name',e.target.value)}/>
                 </div>
                 <div>
-                  <label style={s.formLabel}>Price (ETB/night)</label>
-                  <input style={{ ...s.formInput, marginBottom:0 }} type="number" placeholder="1200"
-                    value={r.price} onChange={e => setRoom(i, 'price', e.target.value)}/>
+                  <label style={fs.formLabel}>Price (ETB/night)</label>
+                  <input style={{ ...fs.formInput, marginBottom:0 }} type="number" placeholder="1200" value={r.price} onChange={e => setRoom(i,'price',e.target.value)}/>
                 </div>
                 <div style={{ gridColumn:'1/-1' }}>
-                  <label style={s.formLabel}>Description</label>
-                  <input style={{ ...s.formInput, marginBottom:0 }} placeholder="King bed, city view, minibar, AC"
-                    value={r.beds} onChange={e => setRoom(i, 'beds', e.target.value)}/>
+                  <label style={fs.formLabel}>Description</label>
+                  <input style={{ ...fs.formInput, marginBottom:0 }} placeholder="King bed, city view, minibar, AC" value={r.beds} onChange={e => setRoom(i,'beds',e.target.value)}/>
                 </div>
                 <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#1B3A2D', cursor:'pointer' }}>
-                  <input type="checkbox" checked={r.popular}
-                    onChange={e => setRoom(i, 'popular', e.target.checked)}/>
+                  <input type="checkbox" checked={r.popular} onChange={e => setRoom(i,'popular',e.target.checked)}/>
                   Mark as popular
                 </label>
               </div>
@@ -216,9 +291,11 @@ export default function AdminPage({ onBack }) {
   };
 
   const deleteBiz = async (id) => {
-    if (!window.confirm('Deactivate this listing?')) return;
-    await fetch(`${API}/businesses/${id}`, { method:'DELETE' });
-    fetchAll();
+    if (!window.confirm('Are you sure you want to delete this listing?')) return;
+    try {
+      await fetch(`${API}/businesses/${id}`, { method:'DELETE' });
+      setBusinesses(prev => prev.filter(b => b._id !== id));
+    } catch (err) { alert('Error deleting listing'); }
   };
 
   const updateBooking = async (id, status) => {
@@ -235,9 +312,9 @@ export default function AdminPage({ onBack }) {
       name:b.name||'', category:b.category||'hotel', city:b.city||'Jigjiga',
       territory:b.territory||'ET-SO', address:b.address||'', phone:b.phone||'',
       whatsapp:b.whatsapp||'', email:b.email||'', description:b.description||'',
-      photos:(b.photos||[]).join('\n'), amenities:(b.amenities||[]).join(', '),
+      photos:b.photos||[], amenities:(b.amenities||[]).join(', '),
       price:b.price||'', verified:b.verified||false, featured:b.featured||false,
-      plan:b.plan||'free', rooms:b.rooms||EMPTY_FORM.rooms,
+      plan:b.plan||'free', rooms:b.rooms&&b.rooms.length>0?b.rooms:EMPTY_FORM.rooms,
     });
     setShowForm(true);
     setTab('form');
@@ -256,7 +333,7 @@ export default function AdminPage({ onBack }) {
     try {
       const payload = {
         ...form,
-        photos: form.photos ? form.photos.split('\n').map(p=>p.trim()).filter(Boolean) : [],
+        photos: Array.isArray(form.photos) ? form.photos : [],
         amenities: form.amenities ? form.amenities.split(',').map(a=>a.trim()).filter(Boolean) : [],
         active: form.verified,
         price: Number(form.price) || 0,
@@ -387,17 +464,21 @@ export default function AdminPage({ onBack }) {
                     </div>
                     {businesses.map(b => (
                       <div key={b._id} style={{ ...cs.tableRow, gridTemplateColumns:'2fr 1fr 1fr 1fr auto' }}>
-                        <div><div style={{ fontWeight:500, color:'#1B3A2D' }}>{b.name}</div><div style={{ fontSize:11, color:'#4D7A65' }}>{b.phone}</div></div>
+                        <div>
+                          {b.photos&&b.photos[0] && <img src={b.photos[0]} alt="" style={{ width:40, height:30, objectFit:'cover', borderRadius:4, marginRight:8, verticalAlign:'middle' }}/>}
+                          <span style={{ fontWeight:500, color:'#1B3A2D' }}>{b.name}</span>
+                          <div style={{ fontSize:11, color:'#4D7A65' }}>{b.phone}</div>
+                        </div>
                         <div style={{ fontSize:12, color:'#4D7A65' }}>{b.category}</div>
                         <div style={{ fontSize:12, color:'#4D7A65' }}>{b.city}</div>
                         <span style={{ ...cs.badge, background:b.verified?'#E8F5EE':'#FDF3DC', color:b.verified?'#2D6A4F':'#8B6A00' }}>{b.verified?'Verified':'Pending'}</span>
                         <div style={{ display:'flex', gap:4 }}>
-                          <button style={{ ...cs.btn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={() => openEdit(b)}><IconEdit size={11}/></button>
+                          <button style={{ ...cs.btn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={() => openEdit(b)} title="Edit"><IconEdit size={11}/></button>
                           {!b.verified
-                            ? <button style={{ ...cs.btn, background:'#E8F5EE', color:'#2D6A4F' }} onClick={() => verify(b._id, true)}><IconShieldCheck size={11}/>Verify</button>
-                            : <button style={{ ...cs.btn, background:'#FDF3DC', color:'#8B6A00' }} onClick={() => verify(b._id, false)}><IconShieldX size={11}/></button>
+                            ? <button style={{ ...cs.btn, background:'#E8F5EE', color:'#2D6A4F' }} onClick={() => verify(b._id,true)} title="Verify"><IconShieldCheck size={11}/>Verify</button>
+                            : <button style={{ ...cs.btn, background:'#FDF3DC', color:'#8B6A00' }} onClick={() => verify(b._id,false)} title="Unverify"><IconShieldX size={11}/></button>
                           }
-                          <button style={{ ...cs.btn, background:'#FEE', color:'#C00' }} onClick={() => deleteBiz(b._id)}><IconTrash size={11}/></button>
+                          <button style={{ ...cs.btn, background:'#FEE', color:'#C00' }} onClick={() => deleteBiz(b._id)} title="Delete"><IconTrash size={11}/>Delete</button>
                         </div>
                       </div>
                     ))}
@@ -442,13 +523,10 @@ export default function AdminPage({ onBack }) {
 
             {tab === 'form' && (
               <ListingForm
-                form={form}
-                setForm={setForm}
+                form={form} setForm={setForm}
                 onSave={saveForm}
                 onCancel={() => { setTab('listings'); setShowForm(false); }}
-                saving={saving}
-                msg={msg}
-                editId={editId}
+                saving={saving} msg={msg} editId={editId}
               />
             )}
           </>
