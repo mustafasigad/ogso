@@ -1,4 +1,4 @@
-﻿const router = require("express").Router();
+const router = require("express").Router();
 const Booking = require("../models/Booking");
 
 const sendWhatsApp = async (to, message) => {
@@ -39,9 +39,11 @@ router.post("/", async (req, res) => {
       paymentMethod: req.body.paymentMethod || "cash",
     });
 
+    const hotelName = req.body.hotelName || "your hotel";
     const guestMsg = 
       `Ogso Booking Confirmed!\n\n` +
       `Reference: ${booking.ref}\n` +
+      `Hotel: ${hotelName}\n` +
       `Room: ${req.body.roomName}\n` +
       `Check-in: ${new Date(req.body.checkIn).toDateString()}\n` +
       `Check-out: ${new Date(req.body.checkOut).toDateString()}\n` +

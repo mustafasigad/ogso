@@ -1,4 +1,4 @@
-﻿const router = require("express").Router();
+const router = require("express").Router();
 const Business = require("../models/Business");
 
 router.get("/", async (req, res) => {
@@ -49,8 +49,8 @@ router.put("/:id", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    await Business.findByIdAndUpdate(req.params.id, { active: false });
-    res.json({ message: "Deactivated" });
+    await Business.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
