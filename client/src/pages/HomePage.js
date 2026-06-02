@@ -184,6 +184,7 @@ export default function App() {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           hotelId: selectedHotel.id, businessId: selectedHotel.id,
+          hotelName: selectedHotel.name,
           roomType: selectedRoom.type, roomName: selectedRoom.name,
           pricePerNight: selectedRoom.price,
           checkIn: bookForm.checkin, checkOut: bookForm.checkout,
