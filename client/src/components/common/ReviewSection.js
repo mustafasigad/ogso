@@ -45,7 +45,8 @@ useEffect(() => {
     .catch(() => setLoading(false));
 }, [hotelId]);
 
-  const submit = async () => {
+ const submit = async () => {
+    if (hotelId.length < 20) { setError('Reviews are only available for verified database listings.'); return; }
     if (!form.name) { setError('Please enter your name'); return; }
     if (!form.rating) { setError('Please select a rating'); return; }
     if (!form.text || form.text.length < 10) { setError('Please write at least 10 characters'); return; }
