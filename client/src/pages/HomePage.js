@@ -415,21 +415,22 @@ photos: b.photos || [],
         <div style={{ fontSize:12, color:'#4D7A65', marginBottom:14, lineHeight:1.6 }}>{selectedHotel.desc}</div>
 
         <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
-        {getRooms(selectedHotel).map(r=>(
-          <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
-            <div>
-              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
-                {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
-              </div>
-              <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>{r.beds}</div>
-            </div>
-            <div style={{ textAlign:'right' }}>
-              <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D' }}>ETB {r.price.toLocaleString()}</div>
-              <div style={{ fontSize:10, color:'#4D7A65' }}>/night</div>
-            </div>
-          </div>
-        ))}
+    {getRooms(selectedHotel).map(r=>(
+  <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
+    {r.photo && <img src={r.photo} alt={r.name} style={{ width:80, height:60, objectFit:'cover', borderRadius:8, marginRight:10, flexShrink:0 }}/>}
+    <div style={{ flex:1 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+        <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
+        {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
+      </div>
+      <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>{r.beds}</div>
+    </div>
+    <div style={{ textAlign:'right' }}>
+      <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D' }}>ETB {r.price.toLocaleString()}</div>
+      <div style={{ fontSize:10, color:'#4D7A65' }}>/night</div>
+    </div>
+  </div>
+))}
 
         
          <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>

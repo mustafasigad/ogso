@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PhotoUpload from '../components/common/PhotoUpload';
-
 import {
   IconBuilding, IconCalendar, IconShieldCheck, IconShieldX,
   IconTrash, IconEdit, IconCheck, IconX,
@@ -8,8 +7,9 @@ import {
   IconPhoto
 } from '@tabler/icons-react';
 
-
 const API = 'https://ogso-production.up.railway.app/api';
+const CLOUD_NAME = 'dkpcbszza';
+const UPLOAD_PRESET = 'ogso_hotels';
 
 const EMPTY_FORM = {
   name:'', category:'hotel', city:'Jigjiga', territory:'ET-SO',
@@ -17,8 +17,8 @@ const EMPTY_FORM = {
   description:'', photos:[], amenities:'',
   price:'', verified:false, featured:false, plan:'free',
   rooms:[
-    { type:'standard', name:'Standard Room', price:'', beds:'Double bed, AC, en-suite bathroom', popular:false },
-    { type:'deluxe', name:'Deluxe Room', price:'', beds:'King bed, city view, minibar', popular:true },
+    { type:'standard', name:'Standard Room', price:'', beds:'Double bed, AC, en-suite bathroom', popular:false, photo:'' },
+    { type:'deluxe', name:'Deluxe Room', price:'', beds:'King bed, city view, minibar', popular:true, photo:'' },
   ]
 };
 
@@ -31,6 +31,68 @@ const fs = {
   roomCard:{ background:'#F8F4EC', borderRadius:10, padding:12, marginBottom:10, border:'0.5px solid #C8E6D8' },
 };
 
+function RoomPhotoUpload({ photo, onUpdate }) {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+  const fileRef = useRef();
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Please select an image file'); return; }
+    if (file.size > 10 * 1024 * 1024) { setError('Image must be under 10MB'); return; }
+    setError(''); setUploading(true); setProgress(0);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+      formData.append('folder', 'ogso/rooms');
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setProgress(Math.round(e.loaded / e.total * 100));
+      };
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const data = JSON.parse(xhr.responseText);
+          onUpdate(data.secure_url);
+          setUploading(false); setProgress(0);
+        } else { setError('Upload failed'); setUploading(false); }
+      };
+      xhr.onerror = () => { setError('Upload failed'); setUploading(false); };
+      xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+      xhr.send(formData);
+    } catch (err) { setError('Upload failed'); setUploading(false); }
+    e.target.value = '';
+  };
+
+  return (
+    <div style={{ marginTop:8 }}>
+      <label style={fs.formLabel}>Room photo</label>
+      {photo ? (
+        <div style={{ position:'relative', height:100, borderRadius:8, overflow:'hidden', marginBottom:6 }}>
+          <img src={photo} alt="Room" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+          <button onClick={() => onUpdate('')}
+            style={{ position:'absolute', top:4, right:4, background:'rgba(0,0,0,0.6)', border:'none', borderRadius:'50%', width:22, height:22, color:'#fff', cursor:'pointer', fontSize:12 }}>
+            x
+          </button>
+        </div>
+      ) : (
+        <label style={{ display:'flex', alignItems:'center', gap:8, border:'1.5px dashed #C8E6D8', borderRadius:8, padding:'8px 12px', cursor:'pointer', background:'#fff', marginBottom:6 }}>
+          <IconPhoto size={18} color="#4D7A65"/>
+          <span style={{ fontSize:12, color:'#4D7A65' }}>{uploading ? `Uploading ${progress}%...` : 'Upload room photo'}</span>
+          <input ref={fileRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleFile} disabled={uploading}/>
+        </label>
+      )}
+      {uploading && (
+        <div style={{ background:'#E8F5EE', borderRadius:4, height:4, overflow:'hidden', marginBottom:6 }}>
+          <div style={{ background:'#2D6A4F', height:'100%', width:`${progress}%`, transition:'width 0.3s' }}/>
+        </div>
+      )}
+      {error && <div style={{ fontSize:11, color:'#C00', marginBottom:6 }}>{error}</div>}
+    </div>
+  );
+}
 
 function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
   const set = (field, val) => setForm(prev => ({ ...prev, [field]: val }));
@@ -39,7 +101,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
     rooms[i] = { ...rooms[i], [field]: val };
     return { ...prev, rooms };
   });
-  const addRoom = () => setForm(prev => ({ ...prev, rooms: [...prev.rooms, { type:'standard', name:'', price:'', beds:'', popular:false }] }));
+  const addRoom = () => setForm(prev => ({ ...prev, rooms: [...prev.rooms, { type:'standard', name:'', price:'', beds:'', popular:false, photo:'' }] }));
   const removeRoom = (i) => setForm(prev => ({ ...prev, rooms: prev.rooms.filter((_,idx) => idx !== i) }));
 
   return (
@@ -103,9 +165,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
         <textarea style={{ ...fs.formInput, resize:'none' }} rows={3} placeholder="Describe the business..." value={form.description} onChange={e => set('description', e.target.value)}/>
         <label style={fs.formLabel}>Amenities (comma separated)</label>
         <input style={fs.formInput} placeholder="WiFi, Breakfast, AC, Parking, Prayer room" value={form.amenities} onChange={e => set('amenities', e.target.value)}/>
-
         <PhotoUpload photos={form.photos} onUpdate={urls => set('photos', urls)}/>
-
         <div style={{ display:'flex', gap:20, marginTop:4 }}>
           <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#1B3A2D', cursor:'pointer' }}>
             <input type="checkbox" checked={form.verified} onChange={e => { set('verified', e.target.checked); set('active', e.target.checked); }}/>
@@ -154,6 +214,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
                   Mark as popular
                 </label>
               </div>
+              <RoomPhotoUpload photo={r.photo||''} onUpdate={url => setRoom(i,'photo',url)}/>
             </div>
           ))}
         </div>
@@ -229,7 +290,8 @@ export default function AdminPage({ onBack }) {
       whatsapp:b.whatsapp||'', email:b.email||'', description:b.description||'',
       photos:b.photos||[], amenities:(b.amenities||[]).join(', '),
       price:b.price||'', verified:b.verified||false, featured:b.featured||false,
-      plan:b.plan||'free', rooms:b.rooms&&b.rooms.length>0?b.rooms:EMPTY_FORM.rooms,
+      plan:b.plan||'free',
+      rooms:b.rooms&&b.rooms.length>0 ? b.rooms.map(r=>({...r, photo:r.photo||''})) : EMPTY_FORM.rooms,
     });
     setShowForm(true);
     setTab('form');
@@ -252,7 +314,7 @@ export default function AdminPage({ onBack }) {
         amenities: form.amenities ? form.amenities.split(',').map(a=>a.trim()).filter(Boolean) : [],
         active: form.verified,
         price: Number(form.price) || 0,
-        rooms: form.rooms.map(r => ({ ...r, price: Number(r.price) || 0 })),
+        rooms: form.rooms.map(r => ({ ...r, price: Number(r.price) || 0, photo: r.photo||'' })),
       };
       const url = editId ? `${API}/businesses/${editId}` : `${API}/businesses`;
       const method = editId ? 'PUT' : 'POST';
@@ -388,12 +450,12 @@ export default function AdminPage({ onBack }) {
                         <div style={{ fontSize:12, color:'#4D7A65' }}>{b.city}</div>
                         <span style={{ ...cs.badge, background:b.verified?'#E8F5EE':'#FDF3DC', color:b.verified?'#2D6A4F':'#8B6A00' }}>{b.verified?'Verified':'Pending'}</span>
                         <div style={{ display:'flex', gap:4 }}>
-                          <button style={{ ...cs.btn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={() => openEdit(b)} title="Edit"><IconEdit size={11}/></button>
+                          <button style={{ ...cs.btn, background:'#F0F7F4', color:'#2D6A4F' }} onClick={() => openEdit(b)}><IconEdit size={11}/></button>
                           {!b.verified
-                            ? <button style={{ ...cs.btn, background:'#E8F5EE', color:'#2D6A4F' }} onClick={() => verify(b._id,true)} title="Verify"><IconShieldCheck size={11}/>Verify</button>
-                            : <button style={{ ...cs.btn, background:'#FDF3DC', color:'#8B6A00' }} onClick={() => verify(b._id,false)} title="Unverify"><IconShieldX size={11}/></button>
+                            ? <button style={{ ...cs.btn, background:'#E8F5EE', color:'#2D6A4F' }} onClick={() => verify(b._id,true)}><IconShieldCheck size={11}/>Verify</button>
+                            : <button style={{ ...cs.btn, background:'#FDF3DC', color:'#8B6A00' }} onClick={() => verify(b._id,false)}><IconShieldX size={11}/></button>
                           }
-                          <button style={{ ...cs.btn, background:'#FEE', color:'#C00' }} onClick={() => deleteBiz(b._id)} title="Delete"><IconTrash size={11}/>Delete</button>
+                          <button style={{ ...cs.btn, background:'#FEE', color:'#C00' }} onClick={() => deleteBiz(b._id)}><IconTrash size={11}/>Delete</button>
                         </div>
                       </div>
                     ))}
