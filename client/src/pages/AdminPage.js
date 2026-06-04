@@ -178,7 +178,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
         </div>
       </div>
 
-      {form.category === 'hotel' && (
+      {form.category?.toLowerCase() === 'hotel' && (
         <div style={fs.formCard}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
             <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>Room types</div>
