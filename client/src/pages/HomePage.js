@@ -156,6 +156,7 @@ export default function App() {
             reviews: b.reviewCount || 0, verified: b.verified,
             amenities: b.amenities && b.amenities.length > 0 ? b.amenities : ['WiFi'],
             photo: b.photos && b.photos.length > 0 ? b.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
+photos: b.photos || [],
             desc: b.description || '',
             phone: b.phone || '',
             rooms: b.rooms || []
