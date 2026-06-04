@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PhotoUpload from '../components/common/PhotoUpload';
 import {
   IconBuilding, IconCalendar, IconShieldCheck, IconShieldX,
   IconTrash, IconEdit, IconCheck, IconX,
