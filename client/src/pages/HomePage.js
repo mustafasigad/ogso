@@ -9,6 +9,7 @@ import ReviewSection from '../components/common/ReviewSection';
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
+import PhotoGallery from '../components/common/RoomGallery';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
@@ -387,11 +388,12 @@ export default function App() {
   if (page === 'detail' && selectedHotel) return (
     <div>
       <Nav/>
-      <div style={c.dhero}>
-        <img src={selectedHotel.photo} alt={selectedHotel.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-        <button style={c.backBtn} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
-        {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
-      </div>
+     <div style={{ position:'relative' }}>
+  <PhotoGallery photos={selectedHotel.photos && selectedHotel.photos.length > 0 ? selectedHotel.photos : [selectedHotel.photo]} hotelName={selectedHotel.name}/>
+  <button style={{...c.backBtn, position:'absolute', top:10, left:12, zIndex:2}} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
+  {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
+</div>
+
       <div style={{ padding:'14px 16px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:4 }}>
           <div style={{ fontSize:20, fontWeight:500, color:'#1B3A2D', flex:1 }}>{selectedHotel.name}</div>
