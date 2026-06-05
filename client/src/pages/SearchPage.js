@@ -32,7 +32,7 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
     try {
       const params = new URLSearchParams();
       if (city !== 'All cities') params.set('city', city);
-      params.set('category', category.toLowerCase().replace(' ', '_'));
+      params.set('category', category);
       if (verifiedOnly) params.set('verified', 'true');
       params.set('limit', LIMIT);
       params.set('page', pageNum);
@@ -234,4 +234,5 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
     </div>
   );
 }
+
 
