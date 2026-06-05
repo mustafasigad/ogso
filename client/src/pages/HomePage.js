@@ -417,7 +417,9 @@ photos: b.photos || [],
         <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
     {getRooms(selectedHotel).map(r=>(
   <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
-    {r.photo && <img src={r.photo} alt={r.name} style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0 }}/>}
+{r.photo && <img src={r.photo} alt={r.name} 
+  onClick={e => { e.stopPropagation(); setLightboxPhoto(r.photo); }}
+  style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0, cursor:'zoom-in' }}/>}
     <div style={{ flex:1 }}>
       <div style={{ display:'flex', alignItems:'center', gap:6 }}>
         <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
