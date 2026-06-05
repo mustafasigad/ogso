@@ -143,7 +143,8 @@ export default function App() {
   const [searchGuests, setSearchGuests] = useState('2 guests');
   const [activeCat, setActiveCat] = useState('Hotels');
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
-  const [dbHotels, setDbHotels] = useState([]);
+const [dbHotels, setDbHotels] = useState([]);
+const [lightboxPhoto, setLightboxPhoto] = useState(null);
 
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
@@ -549,5 +550,19 @@ photos: b.photos || [],
     </div>
   );
 
-  return null;
+  return (
+    <>
+      {lightboxPhoto && (
+        <div onClick={() => setLightboxPhoto(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.95)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <img src={lightboxPhoto} alt="Room"
+            style={{ maxWidth:'90vw', maxHeight:'85vh', objectFit:'contain', borderRadius:8 }}/>
+          <button onClick={() => setLightboxPhoto(null)}
+            style={{ position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.2)', border:'none', borderRadius:'50%', width:36, height:36, color:'#fff', cursor:'pointer', fontSize:20 }}>x</button>
+        </div>
+      )}
+    </>
+  );
 }
+  
+
