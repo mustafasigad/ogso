@@ -5,7 +5,7 @@ const roomSchema=new mongoose.Schema({
   price:{type:Number,default:0},
   beds:{type:String,default:""},
   popular:{type:Boolean,default:false},
-  photo:{type:String,default:""},
+  photos:[String],
 });
 const s=new mongoose.Schema({
   name:{type:String,required:true},
