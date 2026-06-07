@@ -139,6 +139,7 @@ export default function App() {
   const [activeCat, setActiveCat] = useState('Hotels');
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
+  const [roomGallery, setRoomGallery] = useState(null);
 
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
