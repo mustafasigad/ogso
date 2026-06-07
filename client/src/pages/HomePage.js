@@ -419,8 +419,8 @@ photos: b.photos || [],
     {getRooms(selectedHotel).map(r=>(
   <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
 {r.photo && <img src={r.photo} alt={r.name} 
- onClick={e => { e.stopPropagation(); document.getElementById('ogso-lightbox').style.display='flex'; document.getElementById('ogso-lightbox-img').src=r.photo; }}
-  style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0, cursor:'zoom-in' }}/>}
+onClick={e => { e.stopPropagation(); setLightboxPhoto(r.photo); }}
+style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0, cursor:'zoom-in' }}/>}
     <div style={{ flex:1 }}>
       <div style={{ display:'flex', alignItems:'center', gap:6 }}>
         <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
@@ -442,9 +442,17 @@ photos: b.photos || [],
         <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
-        <button style={c.obtn}>Enquire directly</button>
+  <button style={c.obtn}>Enquire directly</button>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
+      {lightboxPhoto && (
+        <div onClick={() => setLightboxPhoto(null)}
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.95)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <img src={lightboxPhoto} alt="Room" style={{ maxWidth:'90vw', maxHeight:'85vh', objectFit:'contain', borderRadius:8 }}/>
+          <button onClick={e=>{e.stopPropagation();setLightboxPhoto(null);}}
+            style={{ position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.2)', border:'none', borderRadius:'50%', width:36, height:36, color:'#fff', cursor:'pointer', fontSize:20 }}>x</button>
+        </div>
+      )}
     </div>
   );
 

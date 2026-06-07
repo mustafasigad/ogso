@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   IconSearch, IconArrowLeft, IconBuilding, IconMapPin,
   IconStar, IconShieldCheck, IconAdjustmentsHorizontal,
@@ -7,8 +7,17 @@ import {
 
 const CITIES = ['All cities','Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa','Dire Dawa','Harar'];
 const CATEGORIES = ['Hotels','Restaurants','Clinics','Shops','Car hire','Money transfer'];
-
+const CAT_MAP = { 'Hotels':'hotel', 'Restaurants':'restaurant', 'Clinics':'clinic', 'Shops':'shop', 'Car hire':'car_hire', 'Money transfer':'money_transfer' };
 const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80';
+
+const HARDCODED_HOTELS = [
+  { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true, amenities:['WiFi','Breakfast','AC','Parking'], photo:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80', desc:'The most prestigious hotel in Jigjiga.', category:'hotel', phone:'+251257750001', rooms:[{type:'standard',name:'Standard Room',price:1200,beds:'Double bed, AC',popular:false},{type:'deluxe',name:'Deluxe Room',price:1800,beds:'King bed, city view',popular:true}] },
+  { id:'2', name:'Al-Noor Hotel', city:'Jigjiga', price:850, rating:4.3, reviews:51, verified:true, amenities:['WiFi','AC','Prayer room'], photo:'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80', desc:'Popular with business travellers and families.', category:'hotel', phone:'+251257750002', rooms:[{type:'standard',name:'Standard Room',price:850,beds:'Double bed, AC',popular:false},{type:'deluxe',name:'Deluxe Room',price:1300,beds:'King bed',popular:true}] },
+  { id:'3', name:'Hawd Guest House', city:'Jigjiga', price:550, rating:4.1, reviews:37, verified:false, amenities:['WiFi','Budget'], photo:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80', desc:'Clean and affordable guesthouse.', category:'hotel', phone:'+251257750003', rooms:[{type:'standard',name:'Standard Room',price:550,beds:'Double bed',popular:true}] },
+  { id:'4', name:'Nugaal Palace Hotel', city:'Jigjiga', price:1500, rating:4.4, reviews:62, verified:true, amenities:['Rooftop','Restaurant','WiFi'], photo:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&q=80', desc:'Rooftop terrace with city views.', category:'hotel', phone:'+251257750004', rooms:[{type:'standard',name:'Standard Room',price:1500,beds:'Double bed',popular:false},{type:'deluxe',name:'Deluxe Room',price:2200,beds:'King bed, rooftop view',popular:true}] },
+  { id:'5', name:'Jubba Hotel', city:'Jigjiga', price:900, rating:4.2, reviews:43, verified:false, amenities:['WiFi','Restaurant'], photo:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&q=80', desc:'Comfortable accommodation in central Jigjiga.', category:'hotel', phone:'+251257750005', rooms:[{type:'standard',name:'Standard Room',price:900,beds:'Double bed',popular:false},{type:'deluxe',name:'Deluxe Room',price:1400,beds:'King bed',popular:true}] },
+  { id:'6', name:'Oriental Hotel Jigjiga', city:'Jigjiga', price:700, rating:4.0, reviews:28, verified:false, amenities:['WiFi','Near market'], photo:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80', desc:'Near the main Jigjiga market.', category:'hotel', phone:'+251257750006', rooms:[{type:'standard',name:'Standard Room',price:700,beds:'Double bed',popular:true}] },
+];
 
 export default function SearchPage({ initialCity, initialCat, onBack, onSelectHotel }) {
   const [city, setCity] = useState(initialCity || 'All cities');
@@ -32,15 +41,15 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
     try {
       const params = new URLSearchParams();
       if (city !== 'All cities') params.set('city', city);
-   const catMap = { 'Hotels':'hotel', 'Restaurants':'restaurant', 'Clinics':'clinic', 'Shops':'shop', 'Car hire':'car_hire', 'Money transfer':'money_transfer' };
-params.set('category', catMap[category] || category.toLowerCase());
+      const mappedCat = CAT_MAP[category] || category.toLowerCase();
+      params.set('category', mappedCat);
       if (verifiedOnly) params.set('verified', 'true');
       params.set('limit', LIMIT);
       params.set('page', pageNum);
 
       const res = await fetch(`https://ogso-production.up.railway.app/api/businesses?${params}`);
       const data = await res.json();
-      const businesses = (data.businesses || []).map(b => ({
+      let businesses = (data.businesses || []).map(b => ({
         id: b._id,
         name: b.name,
         city: b.city,
@@ -50,11 +59,25 @@ params.set('category', catMap[category] || category.toLowerCase());
         verified: b.verified,
         amenities: b.amenities && b.amenities.length > 0 ? b.amenities : [],
         photo: b.photos && b.photos.length > 0 ? b.photos[0] : DEFAULT_PHOTO,
+        photos: b.photos || [],
         desc: b.description || '',
         category: b.category,
+        phone: b.phone || '',
+        rooms: b.rooms || [],
       }));
 
-      // Sort client side
+      // Add hardcoded hotels for hotel searches
+      if (mappedCat === 'hotel') {
+        const dbNames = businesses.map(b => b.name);
+        const filtered = HARDCODED_HOTELS.filter(h =>
+          !dbNames.includes(h.name) &&
+          (city === 'All cities' || h.city === city) &&
+          (!verifiedOnly || h.verified)
+        );
+        businesses = [...filtered, ...businesses];
+      }
+
+      // Sort
       if (sortBy === 'rating') businesses.sort((a,b) => b.rating - a.rating);
       if (sortBy === 'price_low') businesses.sort((a,b) => a.price - b.price);
       if (sortBy === 'price_high') businesses.sort((a,b) => b.price - a.price);
@@ -63,9 +86,16 @@ params.set('category', catMap[category] || category.toLowerCase());
       else setResults(prev => [...prev, ...businesses]);
 
       setTotal(data.total || businesses.length);
-      setHasMore(businesses.length === LIMIT);
+      setHasMore((data.businesses || []).length === LIMIT);
     } catch (err) {
       console.error('Search error:', err);
+      // On error show hardcoded hotels for hotel category
+      if (CAT_MAP[category] === 'hotel') {
+        const filtered = HARDCODED_HOTELS.filter(h =>
+          city === 'All cities' || h.city === city
+        );
+        if (replace) setResults(filtered);
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -76,7 +106,7 @@ params.set('category', catMap[category] || category.toLowerCase());
     setPage(1);
     setResults([]);
     fetchResults(1, true);
-  }, [city, category, verifiedOnly, sortBy]);
+  }, [city, category, verifiedOnly, sortBy, fetchResults]);
 
   const loadMore = () => {
     const next = page + 1;
@@ -86,7 +116,7 @@ params.set('category', catMap[category] || category.toLowerCase());
 
   const s = {
     wrap: { minHeight: '100vh', background: '#F8F4EC' },
-    header: { background: '#fff', padding: '12px 16px', borderBottom: '0.5px solid #C8E6D8', position: 'sticky', top: 56, zIndex: 90 },
+    header: { background: '#fff', padding: '12px 16px', borderBottom: '0.5px solid #C8E6D8', position: 'sticky', top: 0, zIndex: 90 },
     searchBar: { display: 'flex', gap: 8, marginBottom: 10 },
     searchInput: { flex: 1, background: '#F0F7F4', borderRadius: 10, padding: '9px 12px', fontSize: 12, color: '#4D7A65', display: 'flex', alignItems: 'center', gap: 6 },
     backBtn: { background: '#F0F7F4', border: '0.5px solid #C8E6D8', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#2D6A4F', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
@@ -193,8 +223,7 @@ params.set('category', catMap[category] || category.toLowerCase());
         ) : (
           <>
             <div style={s.countBar}>
-              <div style={s.count}>{total} {category.toLowerCase()} found</div>
-              <div style={{fontSize:11,color:'#4D7A65'}}>Page {page}</div>
+              <div style={s.count}>{results.length} {category.toLowerCase()} found</div>
             </div>
             <div style={s.grid}>
               {results.map(h=>(
@@ -209,7 +238,7 @@ params.set('category', catMap[category] || category.toLowerCase());
                     <div>{h.amenities.slice(0,3).map(a=><span key={a} style={s.tag}>{a}</span>)}</div>
                     <div style={s.cardRow}>
                       <span style={s.cardPrice}>
-                        {category==='Hotels' ? <>ETB {h.price.toLocaleString()}<span style={{fontSize:9,fontWeight:400,color:'#4D7A65'}}>/night</span></> : 'View listing'}
+                        {CAT_MAP[category]==='hotel' ? <>ETB {h.price.toLocaleString()}<span style={{fontSize:9,fontWeight:400,color:'#4D7A65'}}>/night</span></> : 'View listing'}
                       </span>
                       {h.rating > 0 && <span style={s.cardRating}><IconStar size={11} fill="#D4A843" color="#D4A843"/>{h.rating}</span>}
                     </div>
@@ -222,18 +251,10 @@ params.set('category', catMap[category] || category.toLowerCase());
                 {loadingMore ? 'Loading...' : `Load more ${category.toLowerCase()}`}
               </button>
             )}
-            {!hasMore && results.length > 0 && (
-              <div style={{textAlign:'center',fontSize:11,color:'#4D7A65',marginTop:16}}>
-                Showing all {results.length} results
-              </div>
-            )}
           </>
         )}
       </div>
-
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
-
-
