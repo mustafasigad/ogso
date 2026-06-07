@@ -413,7 +413,12 @@ export default function App() {
         <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
         {getRooms(selectedHotel).map(r=>(
           <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?{ borderColor:'#2D6A4F', background:'#F0F7F4' }:{})}} onClick={()=>setSelectedRoom(r)}>
-            <div>
+            {r.photos && r.photos.length > 0 && (
+              <img src={r.photos[0]} alt={r.name}
+                onClick={e => { e.stopPropagation(); setRoomGallery({photos: r.photos, name: r.name}); }}
+                style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0, cursor:'zoom-in' }}/>
+            )}
+            <div style={{ flex:1 }}>
               <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
                 {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
