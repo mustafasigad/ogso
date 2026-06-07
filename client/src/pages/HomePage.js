@@ -9,7 +9,7 @@ import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
 import ReviewSection from '../components/common/ReviewSection';
-
+import { RoomPhotoGallery } from '../components/common/RoomPhotoUploadMulti';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
