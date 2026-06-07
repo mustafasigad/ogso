@@ -3,13 +3,12 @@ import {
   IconBuilding, IconToolsKitchen2, IconHeartRateMonitor,
   IconShoppingBag, IconCar, IconCash, IconShieldCheck,
   IconBrandWhatsapp, IconLanguage, IconMapPin, IconStar,
-  IconSearch, IconArrowLeft, IconCheck, IconAdjustmentsHorizontal
+  IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
-import ReviewSection from '../components/common/ReviewSection';
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
-import PhotoGallery from '../components/common/RoomGallery';
+import ReviewSection from '../components/common/ReviewSection';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
@@ -99,11 +98,6 @@ const WHY = [
   { icon:<IconLanguage size={22} color="#fff"/>, title:'Af-Soomaali', desc:'Full Somali language support' },
   { icon:<IconCash size={22} color="#fff"/>, title:'Pay in ETB', desc:'Cash, Telebirr or card' },
 ];
-const REVIEWS = [
-  { name:'Faadumo A.', rating:5, text:'Qolasha aad bay u nadiifsan yihiin. Shaqaaluhuna waa kuwo xiriir fiican leh.' },
-  { name:'Mohamed H. - London', rating:4, text:'Confirmed on WhatsApp in 20 minutes. Exactly what I needed visiting family.' },
-  { name:'Hodan I. - Minnesota', rating:5, text:'Finally an app for Jigjiga! Paid cash on arrival, no issues at all.' },
-];
 
 function StarRating({ rating, size=12 }) {
   return (
@@ -143,8 +137,7 @@ export default function App() {
   const [searchGuests, setSearchGuests] = useState('2 guests');
   const [activeCat, setActiveCat] = useState('Hotels');
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
-const [dbHotels, setDbHotels] = useState([]);
-const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [dbHotels, setDbHotels] = useState([]);
 
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
@@ -157,7 +150,6 @@ const [lightboxPhoto, setLightboxPhoto] = useState(null);
             reviews: b.reviewCount || 0, verified: b.verified,
             amenities: b.amenities && b.amenities.length > 0 ? b.amenities : ['WiFi'],
             photo: b.photos && b.photos.length > 0 ? b.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
-photos: b.photos || [],
             desc: b.description || '',
             phone: b.phone || '',
             rooms: b.rooms || []
@@ -167,7 +159,6 @@ photos: b.photos || [],
   }, []);
 
   const allHotels = [...HOTELS, ...dbHotels];
-  const filtered = allHotels.filter(h => searchCity === 'All cities' || h.city === searchCity);
 
   const getRooms = (h) => h.rooms && h.rooms.length > 0 ? h.rooms : [
     { type:'standard', name:'Standard Room', price:h.price, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -187,13 +178,19 @@ photos: b.photos || [],
       const res = await fetch('https://ogso-production.up.railway.app/api/bookings', {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-          hotelId: selectedHotel.id, businessId: selectedHotel.id,
+          hotelId: selectedHotel.id,
+          businessId: selectedHotel.id,
           hotelName: selectedHotel.name,
-          roomType: selectedRoom.type, roomName: selectedRoom.name,
+          hotelPhone: selectedHotel.phone,
+          roomType: selectedRoom.type,
+          roomName: selectedRoom.name,
           pricePerNight: selectedRoom.price,
-          checkIn: bookForm.checkin, checkOut: bookForm.checkout,
-          guests: bookForm.guests, guestName: bookForm.name,
-          guestPhone: bookForm.phone, notes: bookForm.notes,
+          checkIn: bookForm.checkin,
+          checkOut: bookForm.checkout,
+          guests: bookForm.guests,
+          guestName: bookForm.name,
+          guestPhone: bookForm.phone,
+          notes: bookForm.notes,
           paymentMethod: bookForm.payment,
         })
       });
@@ -240,7 +237,6 @@ photos: b.photos || [],
     backBtn:{ position:'absolute', top:10, left:12, background:'rgba(0,0,0,0.4)', border:'none', borderRadius:20, padding:'6px 14px', color:'#fff', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:4, zIndex:2 },
     rcard:{ border:'0.5px solid #C8E6D8', borderRadius:10, padding:'11px 13px', marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', background:'#fff' },
     rcardSel:{ borderColor:'#2D6A4F', background:'#F0F7F4' },
-    rvcard:{ background:'#F0F7F4', borderRadius:10, padding:'10px 12px', marginBottom:8 },
     pbtn:{ width:'100%', padding:12, background:'#2D6A4F', border:'none', borderRadius:10, color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'center', gap:6 },
     obtn:{ width:'100%', padding:10, background:'transparent', border:'1px solid #2D6A4F', borderRadius:10, color:'#2D6A4F', fontSize:12, cursor:'pointer' },
     formCard:{ background:'#F8F4EC', borderRadius:12, padding:14, marginBottom:10 },
@@ -380,22 +376,21 @@ photos: b.photos || [],
         </div>
       </div>
 
-     <footer style={c.footer}>
-  2026 Ogso - Every business, verified. - Built for the Somali world
-  <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
-</footer>
+      <footer style={c.footer}>
+        2026 Ogso - Every business, verified. - Built for the Somali world
+        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
+      </footer>
     </div>
   );
 
   if (page === 'detail' && selectedHotel) return (
     <div>
       <Nav/>
-     <div style={{ position:'relative' }}>
-  <PhotoGallery photos={selectedHotel.photos && selectedHotel.photos.length > 0 ? selectedHotel.photos : [selectedHotel.photo]} hotelName={selectedHotel.name}/>
-  <button style={{...c.backBtn, position:'absolute', top:10, left:12, zIndex:2}} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
-  {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
-</div>
-
+      <div style={c.dhero}>
+        <img src={selectedHotel.photo} alt={selectedHotel.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+        <button style={c.backBtn} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
+        {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
+      </div>
       <div style={{ padding:'14px 16px' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:4 }}>
           <div style={{ fontSize:20, fontWeight:500, color:'#1B3A2D', flex:1 }}>{selectedHotel.name}</div>
@@ -416,43 +411,31 @@ photos: b.photos || [],
         <div style={{ fontSize:12, color:'#4D7A65', marginBottom:14, lineHeight:1.6 }}>{selectedHotel.desc}</div>
 
         <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:10 }}>Choose your room</div>
-    {getRooms(selectedHotel).map(r=>(
-  <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?c.rcardSel:{})}} onClick={()=>setSelectedRoom(r)}>
-{r.photo && <img src={r.photo} alt={r.name} 
-onClick={e => { e.stopPropagation(); setLightboxPhoto(r.photo); }}
-style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12, flexShrink:0, cursor:'zoom-in' }}/>}
-    <div style={{ flex:1 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-        <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
-        {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
-      </div>
-      <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>{r.beds}</div>
-    </div>
-    <div style={{ textAlign:'right' }}>
-      <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D' }}>ETB {r.price.toLocaleString()}</div>
-      <div style={{ fontSize:10, color:'#4D7A65' }}>/night</div>
-    </div>
-  </div>
-))}
+        {getRooms(selectedHotel).map(r=>(
+          <div key={r.type} style={{...c.rcard,...(selectedRoom?.type===r.type?{ borderColor:'#2D6A4F', background:'#F0F7F4' }:{})}} onClick={()=>setSelectedRoom(r)}>
+            <div>
+              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                <span style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>{r.name}</span>
+                {r.popular && <span style={{ background:'#2D6A4F', color:'#fff', fontSize:9, padding:'2px 6px', borderRadius:4 }}>Popular</span>}
+              </div>
+              <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>{r.beds}</div>
+            </div>
+            <div style={{ textAlign:'right' }}>
+              <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D' }}>ETB {r.price.toLocaleString()}</div>
+              <div style={{ fontSize:10, color:'#4D7A65' }}>/night</div>
+            </div>
+          </div>
+        ))}
 
-        
-         <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
-        
+        <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
 
         <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
-  <button style={c.obtn}>Enquire directly</button>
+        <button style={c.obtn}>Enquire directly</button>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
-      {lightboxPhoto && (
-        <div onClick={() => setLightboxPhoto(null)}
-          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.95)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <img src={lightboxPhoto} alt="Room" style={{ maxWidth:'90vw', maxHeight:'85vh', objectFit:'contain', borderRadius:8 }}/>
-          <button onClick={e=>{e.stopPropagation();setLightboxPhoto(null);}}
-            style={{ position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.2)', border:'none', borderRadius:'50%', width:36, height:36, color:'#fff', cursor:'pointer', fontSize:20 }}>x</button>
-        </div>
-      )}
+      {roomGallery && <RoomPhotoGallery photos={roomGallery.photos} roomName={roomGallery.name} onClose={() => setRoomGallery(null)}/>}
     </div>
   );
 
@@ -558,17 +541,5 @@ style={{ width:100, height:75, objectFit:'cover', borderRadius:8, marginRight:12
     </div>
   );
 
-return (
-  <>
-    <div id="ogso-lightbox" onClick={() => document.getElementById('ogso-lightbox').style.display='none'}
-      style={{ display:'none', position:'fixed', inset:0, background:'rgba(0,0,0,0.95)', zIndex:1000, alignItems:'center', justifyContent:'center' }}>
-      <img id="ogso-lightbox-img" alt="Room"
-        style={{ maxWidth:'90vw', maxHeight:'85vh', objectFit:'contain', borderRadius:8 }}/>
-      <button onClick={() => document.getElementById('ogso-lightbox').style.display='none'}
-        style={{ position:'absolute', top:16, right:16, background:'rgba(255,255,255,0.2)', border:'none', borderRadius:'50%', width:36, height:36, color:'#fff', cursor:'pointer', fontSize:20 }}>x</button>
-    </div>
-  </>
-);
+  return null;
 }
-  
-
