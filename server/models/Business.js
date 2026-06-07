@@ -11,6 +11,7 @@ const s=new mongoose.Schema({
   name:{type:String,required:true},
   category:{type:String,required:true},
   city:{type:String,required:true},
+  suburb:{type:String,default:""},
   territory:{type:String,default:"ET-SO"},
   address:{type:String,default:""},
   phone:{type:String,required:true},
@@ -30,5 +31,5 @@ const s=new mongoose.Schema({
   reviewCount:{type:Number,default:0},
   active:{type:Boolean,default:true}
 },{timestamps:true});
-s.index({name:"text",city:"text"});
+s.index({name:"text",description:"text",city:"text"});
 module.exports=mongoose.model("Business",s);

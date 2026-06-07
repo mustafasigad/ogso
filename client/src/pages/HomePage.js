@@ -9,7 +9,6 @@ import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
 import ReviewSection from '../components/common/ReviewSection';
-import { RoomPhotoGallery } from '../components/common/RoomPhotoUploadMulti';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
@@ -139,7 +138,6 @@ export default function App() {
   const [activeCat, setActiveCat] = useState('Hotels');
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
-  const [roomGallery, setRoomGallery] = useState(null);
 
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
@@ -153,6 +151,7 @@ export default function App() {
             amenities: b.amenities && b.amenities.length > 0 ? b.amenities : ['WiFi'],
             photo: b.photos && b.photos.length > 0 ? b.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
             desc: b.description || '',
+            suburb: b.suburb || '',
             phone: b.phone || '',
             rooms: b.rooms || []
           })));
@@ -439,7 +438,14 @@ export default function App() {
         <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
-        <button style={c.obtn}>Enquire directly</button>
+        {selectedHotel.phone && (
+          <a href={`https://wa.me/${selectedHotel.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`Hi! I found your hotel on Ogso. I would like to enquire about a room. Hotel: ${selectedHotel.name}`)}`}
+            target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block' }}>
+            <button style={{...c.obtn, display:'flex', alignItems:'center', justifyContent:'center', gap:6}}>
+              <IconBrandWhatsapp size={14}/> Enquire directly on WhatsApp
+            </button>
+          </a>
+        )}
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
       {roomGallery && <RoomPhotoGallery photos={roomGallery.photos} roomName={roomGallery.name} onClose={() => setRoomGallery(null)}/>}

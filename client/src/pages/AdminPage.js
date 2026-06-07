@@ -1,16 +1,24 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PhotoUpload from '../components/common/PhotoUpload';
 import { RoomPhotoUpload } from '../components/common/RoomPhotoUploadMulti';
 import {
   IconBuilding, IconCalendar, IconShieldCheck, IconShieldX,
-  IconTrash, IconEdit, IconCheck, IconX,
-  IconRefresh, IconCurrencyDollar, IconPlus, IconArrowLeft, IconEye
+  IconTrash, IconEdit, IconCheck, IconX, IconStar,
+  IconRefresh, IconCurrencyDollar, IconPlus, IconArrowLeft, IconEye,
+  IconMessageCircle
 } from '@tabler/icons-react';
 
 const API = 'https://ogso-production.up.railway.app/api';
 
+const CATEGORIES = [
+  'hotel','restaurant','clinic','pharmacy','shop','car_hire','money_transfer',
+  'bookshop','mechanic','repairs','petrol_station','hardware','bridal_wear',
+  'beauty_salon','barber','bakery','men_wear','women_wear','children_wear',
+  'cleaning_service','shopping_mall','educational_service','used_items','other'
+];
+
 const EMPTY_FORM = {
-  name:'', category:'hotel', city:'Jigjiga', territory:'ET-SO',
+  name:'', category:'hotel', city:'Jigjiga', suburb:'', territory:'ET-SO',
   address:'', phone:'', whatsapp:'', email:'',
   description:'', photos:[], amenities:'',
   price:'', verified:false, featured:false, plan:'free',
@@ -60,13 +68,7 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
           <div>
             <label style={fs.formLabel}>Category</label>
             <select style={fs.formInput} value={form.category} onChange={e => set('category', e.target.value)}>
-              <option value="hotel">Hotel</option>
-              <option value="restaurant">Restaurant</option>
-              <option value="clinic">Clinic</option>
-              <option value="shop">Shop</option>
-              <option value="car_hire">Car hire</option>
-              <option value="money_transfer">Money transfer</option>
-              <option value="other">Other</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())}</option>)}
             </select>
           </div>
           <div>
@@ -74,6 +76,10 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
             <select style={fs.formInput} value={form.city} onChange={e => set('city', e.target.value)}>
               {['Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa','Dire Dawa','Harar'].map(c => <option key={c}>{c}</option>)}
             </select>
+          </div>
+          <div>
+            <label style={fs.formLabel}>Suburb / Area / Xafad</label>
+            <input style={fs.formInput} placeholder="e.g. Hawd, Town Centre, Airport Road" value={form.suburb||''} onChange={e => set('suburb', e.target.value)}/>
           </div>
           <div>
             <label style={fs.formLabel}>Territory</label>
@@ -89,16 +95,18 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
             <label style={fs.formLabel}>Phone / WhatsApp *</label>
             <input style={fs.formInput} placeholder="+251 9XX XXX XXX" value={form.phone} onChange={e => { set('phone', e.target.value); set('whatsapp', e.target.value); }}/>
           </div>
-          <div>
-            <label style={fs.formLabel}>Base price (ETB/night)</label>
-            <input style={fs.formInput} type="number" placeholder="850" value={form.price} onChange={e => set('price', e.target.value)}/>
-          </div>
+          {form.category === 'hotel' && (
+            <div>
+              <label style={fs.formLabel}>Base price (ETB/night)</label>
+              <input style={fs.formInput} type="number" placeholder="850" value={form.price} onChange={e => set('price', e.target.value)}/>
+            </div>
+          )}
         </div>
         <label style={fs.formLabel}>Address</label>
         <input style={fs.formInput} placeholder="Street, District, City" value={form.address} onChange={e => set('address', e.target.value)}/>
         <label style={fs.formLabel}>Description</label>
         <textarea style={{ ...fs.formInput, resize:'none' }} rows={3} placeholder="Describe the business..." value={form.description} onChange={e => set('description', e.target.value)}/>
-        <label style={fs.formLabel}>Amenities (comma separated)</label>
+        <label style={fs.formLabel}>Amenities / Services (comma separated)</label>
         <input style={fs.formInput} placeholder="WiFi, Breakfast, AC, Parking, Prayer room" value={form.amenities} onChange={e => set('amenities', e.target.value)}/>
         <PhotoUpload photos={form.photos} onUpdate={urls => set('photos', urls)}/>
         <div style={{ display:'flex', gap:20, marginTop:4 }}>
@@ -108,12 +116,12 @@ function ListingForm({ form, setForm, onSave, onCancel, saving, msg, editId }) {
           </label>
           <label style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'#1B3A2D', cursor:'pointer' }}>
             <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)}/>
-            Featured (shows at top)
+            Featured
           </label>
         </div>
       </div>
 
-      {form.category?.toLowerCase() === 'hotel' && (
+      {form.category === 'hotel' && (
         <div style={fs.formCard}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
             <div style={{ fontSize:13, fontWeight:500, color:'#1B3A2D' }}>Room types</div>
@@ -169,6 +177,7 @@ export default function AdminPage({ onBack }) {
   const [tab, setTab] = useState('overview');
   const [businesses, setBusinesses] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -181,12 +190,25 @@ export default function AdminPage({ onBack }) {
     try {
       const [bRes, bookRes] = await Promise.all([
         fetch(`${API}/businesses?admin=true`),
-        fetch(`${API}/bookings/my`)
+        fetch(`${API}/bookings/my`),
       ]);
       const bData = await bRes.json();
       const bookData = await bookRes.json();
       setBusinesses(bData.businesses || []);
       setBookings(Array.isArray(bookData) ? bookData : []);
+
+      // Fetch pending reviews for all businesses
+      const allReviews = [];
+      for (const b of (bData.businesses || []).slice(0, 10)) {
+        try {
+          const rRes = await fetch(`${API}/reviews/${b._id}?admin=true`);
+          const rData = await rRes.json();
+          if (Array.isArray(rData)) {
+            rData.forEach(r => allReviews.push({ ...r, businessName: b.name }));
+          }
+        } catch {}
+      }
+      setReviews(allReviews.filter(r => !r.approved));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   }, []);
@@ -206,7 +228,7 @@ export default function AdminPage({ onBack }) {
     try {
       await fetch(`${API}/businesses/${id}`, { method:'DELETE' });
       setBusinesses(prev => prev.filter(b => b._id !== id));
-    } catch (err) { alert('Error deleting listing'); }
+    } catch { alert('Error deleting'); }
   };
 
   const updateBooking = async (id, status) => {
@@ -217,11 +239,23 @@ export default function AdminPage({ onBack }) {
     fetchAll();
   };
 
+  const approveReview = async (id) => {
+    await fetch(`${API}/reviews/${id}/approve`, { method:'PATCH' });
+    setReviews(prev => prev.filter(r => r._id !== id));
+  };
+
+  const deleteReview = async (id) => {
+    if (!window.confirm('Delete this review?')) return;
+    await fetch(`${API}/reviews/${id}`, { method:'DELETE' });
+    setReviews(prev => prev.filter(r => r._id !== id));
+  };
+
   const openEdit = (b) => {
     setEditId(b._id);
     setForm({
       name:b.name||'', category:b.category||'hotel', city:b.city||'Jigjiga',
-      territory:b.territory||'ET-SO', address:b.address||'', phone:b.phone||'',
+      suburb:b.suburb||'', territory:b.territory||'ET-SO',
+      address:b.address||'', phone:b.phone||'',
       whatsapp:b.whatsapp||'', email:b.email||'', description:b.description||'',
       photos:b.photos||[], amenities:(b.amenities||[]).join(', '),
       price:b.price||'', verified:b.verified||false, featured:b.featured||false,
@@ -257,7 +291,7 @@ export default function AdminPage({ onBack }) {
       setMsg(editId ? 'Listing updated!' : 'Listing added!');
       fetchAll();
       setTimeout(() => { setTab('listings'); setShowForm(false); setMsg(''); }, 1500);
-    } catch (err) { setMsg('Error saving. Please try again.'); }
+    } catch { setMsg('Error saving. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -284,6 +318,7 @@ export default function AdminPage({ onBack }) {
     refreshBtn:{ background:'#F0F7F4', border:'0.5px solid #C8E6D8', borderRadius:8, padding:'6px 12px', fontSize:11, color:'#2D6A4F', cursor:'pointer', display:'flex', alignItems:'center', gap:4 },
     emptyBox:{ textAlign:'center', padding:'40px 20px', color:'#4D7A65', fontSize:13 },
     sectionTitle:{ fontSize:15, fontWeight:500, color:'#1B3A2D', marginBottom:12 },
+    reviewCard:{ background:'#fff', borderRadius:10, padding:14, marginBottom:10, border:'0.5px solid #C8E6D8' },
   };
 
   const bstatus = (s) => ({ background: s==='confirmed'?'#E8F5EE':s==='cancelled'?'#FEE':'#FDF3DC', color: s==='confirmed'?'#2D6A4F':s==='cancelled'?'#C00':'#8B6A00' });
@@ -303,7 +338,8 @@ export default function AdminPage({ onBack }) {
           { id:'overview', label:'Overview' },
           { id:'listings', label:`Listings (${businesses.length})` },
           { id:'bookings', label:`Bookings (${bookings.length})` },
-          ...(showForm ? [{ id:'form', label: editId ? 'Edit listing' : 'Add listing' }] : []),
+          { id:'reviews', label:`Reviews${reviews.length > 0 ? ` (${reviews.length} pending)` : ''}` },
+          ...(showForm ? [{ id:'form', label: editId ? 'Edit' : 'Add' }] : []),
         ].map(t => (
           <button key={t.id} style={{ ...cs.tab, ...(tab===t.id?cs.tabOn:{}) }} onClick={() => setTab(t.id)}>{t.label}</button>
         ))}
@@ -333,10 +369,15 @@ export default function AdminPage({ onBack }) {
                   ))}
                 </div>
                 {pendingListings > 0 && (
-                  <div style={{ background:'#FDF3DC', border:'0.5px solid #E8D090', borderRadius:12, padding:16, marginBottom:20 }}>
+                  <div style={{ background:'#FDF3DC', border:'0.5px solid #E8D090', borderRadius:12, padding:16, marginBottom:16 }}>
                     <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:4 }}>{pendingListings} listing{pendingListings>1?'s':''} waiting for verification</div>
-                    <div style={{ fontSize:12, color:'#4D7A65', marginBottom:10 }}>Review and approve new submissions</div>
                     <button style={{ ...cs.btn, background:'#2D6A4F', color:'#fff', padding:'7px 14px' }} onClick={() => setTab('listings')}>Review listings</button>
+                  </div>
+                )}
+                {reviews.length > 0 && (
+                  <div style={{ background:'#FEE', border:'0.5px solid #F99', borderRadius:12, padding:16, marginBottom:16 }}>
+                    <div style={{ fontSize:14, fontWeight:500, color:'#1B3A2D', marginBottom:4 }}>{reviews.length} review{reviews.length>1?'s':''} waiting for approval</div>
+                    <button style={{ ...cs.btn, background:'#C00', color:'#fff', padding:'7px 14px' }} onClick={() => setTab('reviews')}>Review now</button>
                   </div>
                 )}
                 <div style={cs.sectionTitle}>Recent bookings</div>
@@ -366,7 +407,6 @@ export default function AdminPage({ onBack }) {
                 </div>
                 {businesses.length === 0 ? (
                   <div style={cs.emptyBox}>
-                    <div style={{ marginBottom:12 }}>No listings yet</div>
                     <button style={cs.addBtn} onClick={openAdd}><IconPlus size={13}/>Add your first listing</button>
                   </div>
                 ) : (
@@ -379,7 +419,7 @@ export default function AdminPage({ onBack }) {
                         <div>
                           {b.photos&&b.photos[0] && <img src={b.photos[0]} alt="" style={{ width:40, height:30, objectFit:'cover', borderRadius:4, marginRight:8, verticalAlign:'middle' }}/>}
                           <span style={{ fontWeight:500, color:'#1B3A2D' }}>{b.name}</span>
-                          <div style={{ fontSize:11, color:'#4D7A65' }}>{b.phone}</div>
+                          <div style={{ fontSize:11, color:'#4D7A65' }}>{b.suburb ? `${b.suburb}, ` : ''}{b.phone}</div>
                         </div>
                         <div style={{ fontSize:12, color:'#4D7A65' }}>{b.category}</div>
                         <div style={{ fontSize:12, color:'#4D7A65' }}>{b.city}</div>
@@ -429,6 +469,41 @@ export default function AdminPage({ onBack }) {
                       </div>
                     ))}
                   </div>
+                )}
+              </div>
+            )}
+
+            {tab === 'reviews' && (
+              <div>
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+                  <div style={cs.sectionTitle}>Pending reviews ({reviews.length})</div>
+                  <button style={cs.refreshBtn} onClick={fetchAll}><IconRefresh size={13}/>Refresh</button>
+                </div>
+                {reviews.length === 0 ? (
+                  <div style={cs.emptyBox}>No pending reviews — all caught up!</div>
+                ) : (
+                  reviews.map((r,i) => (
+                    <div key={r._id||i} style={cs.reviewCard}>
+                      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8 }}>
+                        <div>
+                          <div style={{ fontSize:12, fontWeight:500, color:'#1B3A2D' }}>{r.guestName}</div>
+                          <div style={{ fontSize:10, color:'#4D7A65' }}>Re: {r.businessName}</div>
+                        </div>
+                        <div style={{ display:'flex', gap:2 }}>
+                          {[1,2,3,4,5].map(n => <IconStar key={n} size={12} fill={n<=r.rating?'#D4A843':'none'} color={n<=r.rating?'#D4A843':'#C8E6D8'}/>)}
+                        </div>
+                      </div>
+                      <div style={{ fontSize:13, color:'#4D7A65', marginBottom:10, lineHeight:1.5 }}>{r.text}</div>
+                      <div style={{ display:'flex', gap:8 }}>
+                        <button style={{ ...cs.btn, background:'#E8F5EE', color:'#2D6A4F' }} onClick={() => approveReview(r._id)}>
+                          <IconCheck size={12}/>Approve
+                        </button>
+                        <button style={{ ...cs.btn, background:'#FEE', color:'#C00' }} onClick={() => deleteReview(r._id)}>
+                          <IconTrash size={12}/>Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
                 )}
               </div>
             )}

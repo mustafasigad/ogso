@@ -5,8 +5,10 @@ router.get("/", async (req, res) => {
   try {
     const filter = req.query.admin === "true" ? {} : { active: true };
     if (req.query.city) filter.city = new RegExp(req.query.city, "i");
-    if (req.query.category) { const _c = req.query.category.replace(/s$/i,""); filter.category = new RegExp("^"+_c+"s?$","i"); }
+    if (req.query.category) filter.category = new RegExp(req.query.category, "i");
     if (req.query.territory) filter.territory = req.query.territory;
+    if (req.query.verified === "true") filter.verified = true;
+    if (req.query.search) filter.name = new RegExp(req.query.search, "i");
     const businesses = await Business.find(filter).sort({ featured: -1, rating: -1 });
     res.json({ businesses });
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -25,24 +27,17 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const business = await Business.create({
-      name:        req.body.name,
-      category:    req.body.category,
-      city:        req.body.city,
-      territory:   req.body.territory || "ET-SO",
-      address:     req.body.address || "",
-      phone:       req.body.phone,
-      whatsapp:    req.body.whatsapp || req.body.phone,
-      email:       req.body.email || "",
-      description: req.body.description || "",
-      photos:      req.body.photos || [],
-      amenities:   req.body.amenities || [],
-      tags:        req.body.tags || [],
-      price:       req.body.price || 0,
-      rooms:       req.body.rooms || [],
-      verified:    req.body.verified || false,
-      featured:    req.body.featured || false,
-      active:      req.body.active || false,
-      plan:        req.body.plan || "free",
+      name: req.body.name, category: req.body.category,
+      city: req.body.city, suburb: req.body.suburb || "",
+      territory: req.body.territory || "ET-SO",
+      address: req.body.address || "", phone: req.body.phone,
+      whatsapp: req.body.whatsapp || req.body.phone,
+      email: req.body.email || "", description: req.body.description || "",
+      photos: req.body.photos || [], amenities: req.body.amenities || [],
+      tags: req.body.tags || [], price: req.body.price || 0,
+      rooms: req.body.rooms || [], verified: req.body.verified || false,
+      featured: req.body.featured || false, active: req.body.active || false,
+      plan: req.body.plan || "free",
     });
     res.status(201).json({ business });
   } catch (err) { res.status(500).json({ error: err.message }); }
