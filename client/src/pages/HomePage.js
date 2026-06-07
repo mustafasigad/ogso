@@ -10,6 +10,7 @@ import ListPage from './ListPage';
 import AdminPage from './AdminPage';
 import ReviewSection from '../components/common/ReviewSection';
 
+
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
     amenities:['WiFi','Breakfast','AC','Parking','Airport pickup'],
