@@ -5,7 +5,7 @@ router.get("/", async (req, res) => {
   try {
     const filter = req.query.admin === "true" ? {} : { active: true };
     if (req.query.city) filter.city = new RegExp(req.query.city, "i");
-    if (req.query.category) filter.category = new RegExp(req.query.category, "i");
+    if (req.query.category) { const _c = req.query.category.replace(/s$/i,""); filter.category = new RegExp("^"+_c+"s?$","i"); }
     if (req.query.territory) filter.territory = req.query.territory;
     const businesses = await Business.find(filter).sort({ featured: -1, rating: -1 });
     res.json({ businesses });

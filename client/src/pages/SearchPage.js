@@ -32,7 +32,8 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
     try {
       const params = new URLSearchParams();
       if (city !== 'All cities') params.set('city', city);
-      params.set('category', category);
+   const catMap = { 'Hotels':'hotel', 'Restaurants':'restaurant', 'Clinics':'clinic', 'Shops':'shop', 'Car hire':'car_hire', 'Money transfer':'money_transfer' };
+params.set('category', catMap[category] || category.toLowerCase());
       if (verifiedOnly) params.set('verified', 'true');
       params.set('limit', LIMIT);
       params.set('page', pageNum);
