@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  IconShieldCheck, IconBrandWhatsapp, IconLanguage,
-  IconMapPin, IconStar, IconSearch, IconArrowLeft, IconCheck
+  IconBuilding, IconToolsKitchen2, IconHeartRateMonitor,
+  IconShoppingBag, IconCar, IconCash, IconShieldCheck,
+  IconBrandWhatsapp, IconLanguage, IconMapPin, IconStar,
+  IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
@@ -76,30 +78,12 @@ const HOTELS = [
 
 const CITIES = ['All cities','Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa'];
 const CATEGORIES = [
-  { icon:'ti-building', label:'Hotels' },
-  { icon:'ti-tools-kitchen-2', label:'Restaurants' },
-  { icon:'ti-heart-rate-monitor', label:'Clinics' },
-  { icon:'ti-pill', label:'Pharmacies' },
-  { icon:'ti-shopping-bag', label:'Shops' },
-  { icon:'ti-car', label:'Car hire' },
-  { icon:'ti-cash', label:'Money transfer' },
-  { icon:'ti-book', label:'Bookshop' },
-  { icon:'ti-tool', label:'Mechanic' },
-  { icon:'ti-settings', label:'Repairs' },
-  { icon:'ti-gas-station', label:'Petrol Station' },
-  { icon:'ti-hammer', label:'Hardware' },
-  { icon:'ti-diamond', label:'Bridal Wear' },
-  { icon:'ti-sparkles', label:'Beauty Salon' },
-  { icon:'ti-cut', label:'Barber' },
-  { icon:'ti-bread', label:'Bakery' },
-  { icon:'ti-shirt', label:'Men Wear' },
-  { icon:'ti-hanger', label:'Women Wear' },
-  { icon:'ti-baby-carriage', label:'Children Wear' },
-  { icon:'ti-wash', label:'Cleaning Service' },
-  { icon:'ti-building-store', label:'Shopping Mall' },
-  { icon:'ti-school', label:'Education' },
-  { icon:'ti-recycle', label:'Used Items' },
-  { icon:'ti-brand-tiktok', label:'TikToker' },
+  { icon:<IconBuilding size={15}/>, label:'Hotels' },
+  { icon:<IconToolsKitchen2 size={15}/>, label:'Restaurants' },
+  { icon:<IconHeartRateMonitor size={15}/>, label:'Clinics' },
+  { icon:<IconShoppingBag size={15}/>, label:'Shops' },
+  { icon:<IconCar size={15}/>, label:'Car hire' },
+  { icon:<IconCash size={15}/>, label:'Money transfer' },
 ];
 const TERRITORIES = [
   { name:'Somali Region', sub:'Ethiopia - Phase 1', active:true },
@@ -342,18 +326,13 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{padding:'16px 16px 0'}}>
-        <div style={{fontSize:14,fontWeight:500,color:'#1B3A2D',marginBottom:10}}>Browse by category</div>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))',gap:8}}>
-          {CATEGORIES.map(cat=>(
-            <div key={cat.label}
-              onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);setPage('search');}}
-              style={{background:activeCat===cat.label?'#F0F7F4':'#fff',border:activeCat===cat.label?'0.5px solid #2D6A4F':'0.5px solid #C8E6D8',borderRadius:10,padding:'10px 6px',textAlign:'center',cursor:'pointer'}}>
-              <i className={`ti ${cat.icon}`} style={{fontSize:22,color:'#2D6A4F',display:'block',marginBottom:5}}></i>
-              <div style={{fontSize:10,color:'#1B3A2D',fontWeight:500,lineHeight:1.3}}>{cat.label}</div>
-            </div>
-          ))}
-        </div>
+      <div style={c.catRow}>
+        {CATEGORIES.map(cat=>(
+          <button key={cat.label} style={{...c.cat,...(activeCat===cat.label?c.catOn:{})}}
+            onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);setPage('search');}}>
+            {cat.icon} {cat.label}
+          </button>
+        ))}
       </div>
 
       <div style={c.sec}>
