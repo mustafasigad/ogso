@@ -213,11 +213,11 @@ const [roomGallery, setRoomGallery] = useState(null);
       });
       const data = await res.json();
       setBookingDone({ ref: data.booking.ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
-      setPage('confirm');
+      navigate('confirm');
     } catch (err) {
       const ref = Math.random().toString(36).substr(2,8).toUpperCase();
       setBookingDone({ ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
-      setPage('confirm');
+      navigate('confirm');
     }
   };
 
@@ -268,7 +268,7 @@ const [roomGallery, setRoomGallery] = useState(null);
 
   const Nav = () => (
     <nav style={c.nav}>
-      <div style={c.logoWrap} onClick={()=>setPage('home')}>
+      <div style={c.logoWrap} onClick={()=>navigate('home')}>
         <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
           <circle cx="20" cy="19" r="11" fill="#52B788"/>
           <circle cx="20" cy="19" r="5.5" fill="#1B3A2D"/>
@@ -280,14 +280,14 @@ const [roomGallery, setRoomGallery] = useState(null);
         </div>
       </div>
       <div style={c.navLinks}>
-        <button style={c.navLink} onClick={()=>setPage('home')}>Hotels</button>
-        <button style={c.navLink} onClick={()=>setPage('home')}>Explore</button>
-        <button style={c.navCta} onClick={()=>setPage('list')}>List your business</button>
+        <button style={c.navLink} onClick={()=>navigate('home')}>Hotels</button>
+        <button style={c.navLink} onClick={()=>navigate('home')}>Explore</button>
+        <button style={c.navCta} onClick={()=>navigate('list')}>List your business</button>
       </div>
     </nav>
   );
 
-  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>;
+  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
   if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
   if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
 
@@ -336,7 +336,7 @@ const [roomGallery, setRoomGallery] = useState(null);
               </div>
             )}
           </div>
-          <button style={c.sbtn} onClick={()=>setPage('search')}>
+          <button style={c.sbtn} onClick={()=>navigate('search')}>
             <IconSearch size={16}/> Search businesses
           </button>
         </div>
@@ -360,7 +360,7 @@ const [roomGallery, setRoomGallery] = useState(null);
         <div style={c.stit}>Featured hotels in Jigjiga</div>
         <div style={c.grid}>
           {allHotels.map(h=>(
-            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>
+            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>
           ))}
         </div>
       </div>
@@ -370,7 +370,7 @@ const [roomGallery, setRoomGallery] = useState(null);
           <div style={{ fontFamily:'Georgia,serif', fontSize:15, fontWeight:700, color:'#1B3A2D' }}>Are you a business owner?</div>
           <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>List your business free and reach thousands of customers</div>
         </div>
-        <button style={c.goldBtn} onClick={()=>setPage('list')}>List for free</button>
+        <button style={c.goldBtn} onClick={()=>navigate('list')}>List for free</button>
       </div>
 
       <div style={{...c.sec, background:'#F8F4EC'}}>
@@ -400,7 +400,7 @@ const [roomGallery, setRoomGallery] = useState(null);
 
       <footer style={c.footer}>
         2026 Ogso - Every business, verified. - Built for the Somali world
-        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
+        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')navigate('admin');}}>*</span>
       </footer>
     </div>
   );
@@ -410,7 +410,7 @@ const [roomGallery, setRoomGallery] = useState(null);
       <Nav/>
       <div style={c.dhero}>
         <img src={selectedHotel.photo} alt={selectedHotel.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-        <button style={c.backBtn} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
+        <button style={c.backBtn} onClick={()=>navigate('home')}><IconArrowLeft size={13}/> Back</button>
         {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
       </div>
       <div style={{ padding:'14px 16px' }}>
@@ -456,7 +456,7 @@ const [roomGallery, setRoomGallery] = useState(null);
 
         <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
 
-        <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
+        <button style={{...c.pbtn, marginTop:16}} onClick={()=>navigate('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
         {selectedHotel.phone && (
@@ -532,7 +532,7 @@ const [roomGallery, setRoomGallery] = useState(null);
           <button type="submit" style={c.pbtn}>
             <IconBrandWhatsapp size={16}/> Confirm booking via WhatsApp
           </button>
-          <button type="button" style={c.obtn} onClick={()=>setPage('detail')}>Back to hotel</button>
+          <button type="button" style={c.obtn} onClick={()=>navigate('detail')}>Back to hotel</button>
         </form>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
@@ -568,8 +568,8 @@ const [roomGallery, setRoomGallery] = useState(null);
           <IconBrandWhatsapp size={22} color="#2D6A4F"/>
           <div style={{ fontSize:12, color:'#1B3A2D', lineHeight:1.5 }}>A WhatsApp confirmation and the hotel's direct number have been sent to {bookingDone.form.phone||'your phone'}.</div>
         </div>
-        <button style={c.pbtn} onClick={()=>setPage('home')}>Back to home</button>
-        <button style={{...c.obtn, marginTop:8}} onClick={()=>setPage('search')}>Browse more hotels</button>
+        <button style={c.pbtn} onClick={()=>navigate('home')}>Back to home</button>
+        <button style={{...c.obtn, marginTop:8}} onClick={()=>navigate('search')}>Browse more hotels</button>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
     </div>
