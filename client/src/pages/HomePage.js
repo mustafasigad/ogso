@@ -287,7 +287,7 @@ const [roomGallery, setRoomGallery] = useState(null);
     </nav>
   );
 
-  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
+if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>navigate('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
   if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
   if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
 
