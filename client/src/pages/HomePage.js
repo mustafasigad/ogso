@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+
 import {
-  IconShieldCheck, IconBrandWhatsapp, IconLanguage,
+  IconShieldCheck, IconBrandWhatsapp, IconLanguage, IconCash,
   IconMapPin, IconStar, IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
+
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
