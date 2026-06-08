@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  IconShieldCheck, IconBrandWhatsapp, IconLanguage, IconCash,
+  IconShieldCheck, IconBrandWhatsapp, IconLanguage,
   IconMapPin, IconStar, IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
 import SearchPage from './SearchPage';
@@ -154,7 +154,19 @@ export default function App() {
   const [activeCat, setActiveCat] = useState('Hotels');
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
-const [roomGallery, setRoomGallery] = useState(null);
+  const [roomGallery, setRoomGallery] = useState(null);
+
+  const navigate = (newPage) => {
+    window.history.pushState({ page: newPage }, '', '/' + (newPage === 'home' ? '' : newPage));
+    setPage(newPage);
+  };
+
+  useEffect(() => {
+    const handlePop = (e) => { setPage(e.state?.page || 'home'); };
+    window.addEventListener('popstate', handlePop);
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
+
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
       .then(r => r.json())
@@ -287,9 +299,9 @@ const [roomGallery, setRoomGallery] = useState(null);
     </nav>
   );
 
-if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>navigate('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
-  if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
-  if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
+  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>navigate('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
+  if (page === 'list') return <ListPage onBack={()=>navigate('home')}/>;
+  if (page === 'admin') return <AdminPage onBack={()=>navigate('home')}/>;
 
   if (page === 'home') return (
     <div>
@@ -347,7 +359,7 @@ if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={s
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))',gap:8}}>
           {CATEGORIES.map(cat=>(
             <div key={cat.label}
-              onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);setPage('search');}}
+              onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);navigate('search');}}
               style={{background:activeCat===cat.label?'#F0F7F4':'#fff',border:activeCat===cat.label?'0.5px solid #2D6A4F':'0.5px solid #C8E6D8',borderRadius:10,padding:'10px 6px',textAlign:'center',cursor:'pointer'}}>
               <i className={`ti ${cat.icon}`} style={{fontSize:22,color:'#2D6A4F',display:'block',marginBottom:5}}></i>
               <div style={{fontSize:10,color:'#1B3A2D',fontWeight:500,lineHeight:1.3}}>{cat.label}</div>
