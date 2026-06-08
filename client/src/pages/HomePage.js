@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-
 import {
-  IconShieldCheck, IconBrandWhatsapp, IconLanguage, IconCash,
+  IconShieldCheck, IconBrandWhatsapp, IconLanguage,
   IconMapPin, IconStar, IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
-
 import SearchPage from './SearchPage';
 import ListPage from './ListPage';
 import AdminPage from './AdminPage';
 import ReviewSection from '../components/common/ReviewSection';
 import { RoomPhotoGallery } from '../components/common/RoomPhotoUploadMulti';
+import ConfirmHotelPage from './ConfirmHotelPage';
 
 const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
@@ -158,6 +157,7 @@ export default function App() {
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
   const [roomGallery, setRoomGallery] = useState(null);
+  const [confirmRef, setConfirmRef] = useState(null);
 
   const navigate = (newPage) => {
     window.history.pushState({ page: newPage }, '', '/' + (newPage === 'home' ? '' : newPage));
@@ -167,6 +167,12 @@ export default function App() {
   useEffect(() => {
     const handlePop = (e) => { setPage(e.state?.page || 'home'); };
     window.addEventListener('popstate', handlePop);
+    // Handle confirm URLs like /confirm/ABC123
+    const path = window.location.pathname;
+    if (path.startsWith('/confirm/')) {
+      const ref = path.split('/confirm/')[1];
+      if (ref) { setConfirmRef(ref); setPage('confirmhotel'); }
+    }
     return () => window.removeEventListener('popstate', handlePop);
   }, []);
 
@@ -302,6 +308,7 @@ export default function App() {
     </nav>
   );
 
+  if (page === 'confirmhotel') return <ConfirmHotelPage bookingRef={confirmRef} onBack={()=>navigate('home')}/>;
   if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>navigate('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
   if (page === 'list') return <ListPage onBack={()=>navigate('home')}/>;
   if (page === 'admin') return <AdminPage onBack={()=>navigate('home')}/>;

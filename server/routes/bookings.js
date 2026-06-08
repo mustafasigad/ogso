@@ -1,83 +1,120 @@
 const router = require("express").Router();
 const Booking = require("../models/Booking");
+const twilio = require("twilio");
 
-const sendWhatsApp = async (to, message) => {
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const FROM = process.env.TWILIO_WHATSAPP_FROM;
+
+async function sendWA(to, msg) {
   try {
-    const twilio = require("twilio")(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-    await twilio.messages.create({
-      from: process.env.TWILIO_WHATSAPP_FROM,
-      to: `whatsapp:${to}`,
-      body: message,
+    if (!to || !FROM) return;
+    const phone = to.replace(/[^0-9+]/g, "");
+    if (phone.length < 7) return;
+    await client.messages.create({
+      from: FROM,
+      to: `whatsapp:${phone.startsWith("+") ? phone : "+" + phone}`,
+      body: msg,
     });
-    return true;
   } catch (err) {
     console.error("WhatsApp error:", err.message);
-    return false;
   }
-};
+}
 
+// GET all bookings
+router.get("/my", async (req, res) => {
+  try {
+    const bookings = await Booking.find().sort({ createdAt: -1 }).limit(100);
+    res.json(bookings);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// GET single booking by ref (for confirm page)
+router.get("/ref/:ref", async (req, res) => {
+  try {
+    const booking = await Booking.findOne({ ref: req.params.ref.toUpperCase() });
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    res.json(booking);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// POST create booking
 router.post("/", async (req, res) => {
   try {
-    const ci = new Date(req.body.checkIn);
-    const co = new Date(req.body.checkOut);
-    const nights = Math.ceil((co - ci) / 86400000) || 1;
-    const totalPrice = req.body.pricePerNight * nights;
+    const ref = Math.random().toString(36).substr(2, 8).toUpperCase();
+    const nights = req.body.checkIn && req.body.checkOut
+      ? Math.max(1, Math.ceil((new Date(req.body.checkOut) - new Date(req.body.checkIn)) / 86400000))
+      : 1;
+    const totalPrice = (req.body.pricePerNight || 0) * nights;
+    const confirmUrl = `${process.env.CLIENT_URL}/confirm/${ref}`;
+
     const booking = await Booking.create({
+      ref,
+      businessId: req.body.businessId || req.body.hotelId,
+      hotelName: req.body.hotelName,
+      hotelPhone: req.body.hotelPhone,
       roomType: req.body.roomType,
       roomName: req.body.roomName,
       pricePerNight: req.body.pricePerNight,
-      totalPrice, nights,
       checkIn: req.body.checkIn,
       checkOut: req.body.checkOut,
+      nights,
       guests: req.body.guests,
       guestName: req.body.guestName,
       guestPhone: req.body.guestPhone,
-      notes: req.body.notes || "",
-      paymentMethod: req.body.paymentMethod || "cash",
+      notes: req.body.notes,
+      paymentMethod: req.body.paymentMethod,
+      totalPrice,
+      status: "pending",
     });
 
-    const hotelName = req.body.hotelName || "your hotel";
-    const guestMsg = 
-      `Ogso Booking Confirmed!\n\n` +
-      `Reference: ${booking.ref}\n` +
-      `Hotel: ${hotelName}\n` +
-      `Room: ${req.body.roomName}\n` +
-      `Check-in: ${new Date(req.body.checkIn).toDateString()}\n` +
-      `Check-out: ${new Date(req.body.checkOut).toDateString()}\n` +
-      `Nights: ${nights}\n` +
-      `Total: ETB ${totalPrice.toLocaleString()}\n` +
-      `Payment: ${req.body.paymentMethod}\n\n` +
-      `Every business, verified. - ogso.app`;
+    // WhatsApp to guest
+    await sendWA(req.body.guestPhone,
+      `✅ Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
+    );
 
-    await sendWhatsApp(req.body.guestPhone, guestMsg);
+    // WhatsApp to hotel
+    await sendWA(req.body.hotelPhone,
+      `🏨 New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
+    );
 
     res.status(201).json({ booking });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.get("/my", async (req, res) => {
+// PATCH confirm or cancel by ref
+router.patch("/ref/:ref/status", async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
-    res.json(bookings);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    const { status } = req.body; // "confirmed" or "cancelled"
+    const booking = await Booking.findOneAndUpdate(
+      { ref: req.params.ref.toUpperCase() },
+      { status },
+      { new: true }
+    );
+    if (!booking) return res.status(404).json({ error: "Booking not found" });
+
+    // Notify guest
+    if (status === "confirmed") {
+      await sendWA(booking.guestPhone,
+        `✅ *Booking Confirmed!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! 🌟`
+      );
+    } else if (status === "cancelled") {
+      await sendWA(booking.guestPhone,
+        `❌ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
+      );
+    }
+
+    res.json(booking);
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// PATCH update by id (admin)
 router.patch("/:id/status", async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(
       req.params.id, { status: req.body.status }, { new: true }
     );
     res.json(booking);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;
