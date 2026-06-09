@@ -164,16 +164,18 @@ export default function App() {
     setPage(newPage);
   };
 
-  useEffect(() => {
+useEffect(() => {
     const handlePop = (e) => { setPage(e.state?.page || 'home'); };
     window.addEventListener('popstate', handlePop);
-    // Handle confirm URLs like /confirm/ABC123
+    return () => window.removeEventListener('popstate', handlePop);
+  }, []);
+
+  useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith('/confirm/')) {
       const ref = path.split('/confirm/')[1];
       if (ref) { setConfirmRef(ref); setPage('confirmhotel'); }
     }
-    return () => window.removeEventListener('popstate', handlePop);
   }, []);
 
   useEffect(() => {
