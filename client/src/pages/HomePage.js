@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  IconShieldCheck, IconBrandWhatsapp, IconLanguage,
+  IconShieldCheck, IconBrandWhatsapp, IconLanguage, IconCash,
   IconMapPin, IconStar, IconSearch, IconArrowLeft, IconCheck
 } from '@tabler/icons-react';
 import SearchPage from './SearchPage';
@@ -481,14 +481,7 @@ export default function App() {
         <button style={{...c.pbtn, marginTop:16}} onClick={()=>navigate('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
-        {selectedHotel.phone && (
-          <a href={`https://wa.me/${selectedHotel.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(`Hi! I found your hotel on Ogso. I would like to enquire about a room. Hotel: ${selectedHotel.name}`)}`}
-            target="_blank" rel="noopener noreferrer" style={{ textDecoration:'none', display:'block' }}>
-            <button style={{...c.obtn, display:'flex', alignItems:'center', justifyContent:'center', gap:6}}>
-              <IconBrandWhatsapp size={14}/> Enquire directly on WhatsApp
-            </button>
-          </a>
-        )}
+   
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
       {roomGallery && <RoomPhotoGallery photos={roomGallery.photos} roomName={roomGallery.name} onClose={() => setRoomGallery(null)}/>}
