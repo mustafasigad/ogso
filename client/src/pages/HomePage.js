@@ -146,7 +146,9 @@ function HotelCard({ h, onClick }) {
 }
 
 export default function App() {
-  const [page, setPage] = useState('home');
+ const initPath = window.location.pathname;
+  const initRef = initPath.startsWith('/confirm/') ? initPath.split('/confirm/')[1] : null;
+  const [page, setPage] = useState(initRef ? 'confirmhotel' : 'home');
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [bookingDone, setBookingDone] = useState(null);
@@ -157,7 +159,7 @@ export default function App() {
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
   const [roomGallery, setRoomGallery] = useState(null);
-  const [confirmRef, setConfirmRef] = useState(null);
+   const [confirmRef, setConfirmRef] = useState(initRef);
 
   const navigate = (newPage) => {
     window.history.pushState({ page: newPage }, '', '/' + (newPage === 'home' ? '' : newPage));
