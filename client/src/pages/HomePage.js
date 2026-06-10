@@ -14,7 +14,7 @@ const HOTELS = [
   { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true,
     amenities:['WiFi','Breakfast','AC','Parking','Airport pickup'],
     photo:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
-    desc:'The most prestigious hotel in Jigjiga, located in the heart of the city centre. Popular with government officials, business travellers and diaspora visitors.',
+    desc:'The most prestigious hotel in Jigjiga, located in the heart of the city centre.',
     phone:'+251257750001',
     rooms:[
       { type:'standard', name:'Standard Room', price:1200, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -25,7 +25,7 @@ const HOTELS = [
   { id:'2', name:'Al-Noor Hotel', city:'Jigjiga', price:850, rating:4.3, reviews:51, verified:true,
     amenities:['WiFi','AC','Parking','Restaurant','Prayer room'],
     photo:'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80',
-    desc:'A well-established hotel popular with business travellers and families. Features an in-house halal restaurant serving Somali and Ethiopian cuisine.',
+    desc:'A well-established hotel popular with business travellers and families.',
     phone:'+251257750002',
     rooms:[
       { type:'standard', name:'Standard Room', price:850, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -36,7 +36,7 @@ const HOTELS = [
   { id:'3', name:'Hawd Guest House', city:'Jigjiga', price:550, rating:4.1, reviews:37, verified:false,
     amenities:['WiFi','AC','Budget','24hr reception'],
     photo:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80',
-    desc:'A clean and affordable guesthouse in the Hawd district, ideal for budget travellers and those visiting family in Jigjiga.',
+    desc:'A clean and affordable guesthouse in the Hawd district.',
     phone:'+251257750003',
     rooms:[
       { type:'single', name:'Single Room', price:550, beds:'Single bed, AC, shared bathroom', popular:false },
@@ -46,7 +46,7 @@ const HOTELS = [
   { id:'4', name:'Nugaal Palace Hotel', city:'Jigjiga', price:1500, rating:4.4, reviews:62, verified:true,
     amenities:['Rooftop','Restaurant','WiFi','AC','Conference room'],
     photo:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&q=80',
-    desc:'Jigjiga most distinctive hotel featuring a rooftop terrace with panoramic views of the city and authentic Somali cuisine.',
+    desc:'Jigjiga most distinctive hotel featuring a rooftop terrace.',
     phone:'+251257750004',
     rooms:[
       { type:'standard', name:'Standard Room', price:1500, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -57,7 +57,7 @@ const HOTELS = [
   { id:'5', name:'Jubba Hotel', city:'Jigjiga', price:900, rating:4.2, reviews:43, verified:false,
     amenities:['WiFi','AC','Restaurant','Laundry','Parking'],
     photo:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&q=80',
-    desc:'Named after the famous Jubba River, this hotel offers comfortable accommodation in central Jigjiga with a popular restaurant.',
+    desc:'Named after the famous Jubba River, comfortable accommodation in central Jigjiga.',
     phone:'+251257750005',
     rooms:[
       { type:'standard', name:'Standard Room', price:900, beds:'Double bed, AC, en-suite bathroom', popular:false },
@@ -67,7 +67,7 @@ const HOTELS = [
   { id:'6', name:'Oriental Hotel Jigjiga', city:'Jigjiga', price:700, rating:4.0, reviews:28, verified:false,
     amenities:['WiFi','AC','Near market','24hr reception'],
     photo:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80',
-    desc:'A convenient hotel located near the main Jigjiga market, ideal for traders and shoppers. Competitive prices.',
+    desc:'A convenient hotel located near the main Jigjiga market.',
     phone:'+251257750006',
     rooms:[
       { type:'standard', name:'Standard Room', price:700, beds:'Double bed, AC, en-suite bathroom', popular:true },
@@ -77,6 +77,7 @@ const HOTELS = [
 ];
 
 const CITIES = ['All cities','Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa'];
+
 const CATEGORIES = [
   { icon:'ti-building', label:'Hotels' },
   { icon:'ti-tools-kitchen-2', label:'Restaurants' },
@@ -103,6 +104,7 @@ const CATEGORIES = [
   { icon:'ti-recycle', label:'Used Items' },
   { icon:'ti-brand-tiktok', label:'TikToker' },
 ];
+
 const TERRITORIES = [
   { name:'Somali Region', sub:'Ethiopia - Phase 1', active:true },
   { name:'Somalia', sub:'Mogadishu - Phase 3' },
@@ -110,6 +112,7 @@ const TERRITORIES = [
   { name:'Djibouti', sub:'City - Phase 2' },
   { name:'Kenya NFD', sub:'Garissa - Phase 4' },
 ];
+
 const WHY = [
   { icon:<IconShieldCheck size={22} color="#fff"/>, title:'Every business verified', desc:'Every listing checked before going live' },
   { icon:<IconBrandWhatsapp size={22} color="#fff"/>, title:'WhatsApp booking', desc:'Confirm in minutes, not hours' },
@@ -146,9 +149,12 @@ function HotelCard({ h, onClick }) {
 }
 
 export default function App() {
- const initPath = window.location.pathname;
-  const initRef = initPath.startsWith('/confirm/') ? initPath.split('/confirm/')[1] : null;
-  const [page, setPage] = useState(initRef ? 'confirmhotel' : 'home');
+  // Initialize page and confirmRef from URL query param
+  const params = new URLSearchParams(window.location.search);
+  const initConfirmRef = params.get('confirm');
+
+  const [page, setPage] = useState(initConfirmRef ? 'confirmhotel' : 'home');
+  const [confirmRef] = useState(initConfirmRef);
   const [selectedHotel, setSelectedHotel] = useState(null);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [bookingDone, setBookingDone] = useState(null);
@@ -159,26 +165,6 @@ export default function App() {
   const [bookForm, setBookForm] = useState({ name:'', phone:'', checkin:'', checkout:'', guests:'2', payment:'cash', notes:'' });
   const [dbHotels, setDbHotels] = useState([]);
   const [roomGallery, setRoomGallery] = useState(null);
-   const [confirmRef, setConfirmRef] = useState(initRef);
-
-  const navigate = (newPage) => {
-    window.history.pushState({ page: newPage }, '', '/' + (newPage === 'home' ? '' : newPage));
-    setPage(newPage);
-  };
-
-useEffect(() => {
-    const handlePop = (e) => { setPage(e.state?.page || 'home'); };
-    window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
-  }, []);
-
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path.startsWith('/confirm/')) {
-      const ref = path.split('/confirm/')[1];
-      if (ref) { setConfirmRef(ref); setPage('confirmhotel'); }
-    }
-  }, []);
 
   useEffect(() => {
     fetch('https://ogso-production.up.railway.app/api/businesses?category=hotel')
@@ -191,6 +177,7 @@ useEffect(() => {
             reviews: b.reviewCount || 0, verified: b.verified,
             amenities: b.amenities && b.amenities.length > 0 ? b.amenities : ['WiFi'],
             photo: b.photos && b.photos.length > 0 ? b.photos[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80',
+            photos: b.photos || [],
             desc: b.description || '',
             suburb: b.suburb || '',
             phone: b.phone || '',
@@ -238,11 +225,11 @@ useEffect(() => {
       });
       const data = await res.json();
       setBookingDone({ ref: data.booking.ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
-      navigate('confirm');
+      setPage('confirm');
     } catch (err) {
       const ref = Math.random().toString(36).substr(2,8).toUpperCase();
       setBookingDone({ ref, hotel: selectedHotel, room: selectedRoom, form: bookForm, nights: nights(), total: selectedRoom.price * nights() });
-      navigate('confirm');
+      setPage('confirm');
     }
   };
 
@@ -262,9 +249,6 @@ useEffect(() => {
     slabel:{ fontSize:10, color:'#4D7A65', marginBottom:3 },
     sinput:{ width:'100%', padding:'8px 10px', border:'0.5px solid #C8E6D8', borderRadius:8, fontSize:12, color:'#1B3A2D' },
     sbtn:{ width:'100%', padding:11, background:'#2D6A4F', border:'none', borderRadius:10, color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 },
-    catRow:{ display:'flex', gap:6, padding:'14px 16px 0', overflowX:'auto', scrollbarWidth:'none' },
-    cat:{ display:'inline-flex', alignItems:'center', gap:5, border:'0.5px solid #C8E6D8', borderRadius:20, padding:'5px 12px', fontSize:11, color:'#4D7A65', cursor:'pointer', background:'#fff', whiteSpace:'nowrap' },
-    catOn:{ background:'#F0F7F4', borderColor:'#2D6A4F', color:'#1B3A2D' },
     sec:{ padding:'16px' },
     stit:{ fontSize:15, fontWeight:500, color:'#1B3A2D', marginBottom:12 },
     grid:{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))', gap:14 },
@@ -278,7 +262,6 @@ useEffect(() => {
     dhero:{ height:220, overflow:'hidden', position:'relative' },
     backBtn:{ position:'absolute', top:10, left:12, background:'rgba(0,0,0,0.4)', border:'none', borderRadius:20, padding:'6px 14px', color:'#fff', fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', gap:4, zIndex:2 },
     rcard:{ border:'0.5px solid #C8E6D8', borderRadius:10, padding:'11px 13px', marginBottom:8, display:'flex', justifyContent:'space-between', alignItems:'center', cursor:'pointer', background:'#fff' },
-    rcardSel:{ borderColor:'#2D6A4F', background:'#F0F7F4' },
     pbtn:{ width:'100%', padding:12, background:'#2D6A4F', border:'none', borderRadius:10, color:'#fff', fontSize:13, fontWeight:500, cursor:'pointer', marginBottom:6, display:'flex', alignItems:'center', justifyContent:'center', gap:6 },
     obtn:{ width:'100%', padding:10, background:'transparent', border:'1px solid #2D6A4F', borderRadius:10, color:'#2D6A4F', fontSize:12, cursor:'pointer' },
     formCard:{ background:'#F8F4EC', borderRadius:12, padding:14, marginBottom:10 },
@@ -293,7 +276,7 @@ useEffect(() => {
 
   const Nav = () => (
     <nav style={c.nav}>
-      <div style={c.logoWrap} onClick={()=>navigate('home')}>
+      <div style={c.logoWrap} onClick={()=>setPage('home')}>
         <svg width="28" height="28" viewBox="0 0 44 44" fill="none">
           <circle cx="20" cy="19" r="11" fill="#52B788"/>
           <circle cx="20" cy="19" r="5.5" fill="#1B3A2D"/>
@@ -305,17 +288,17 @@ useEffect(() => {
         </div>
       </div>
       <div style={c.navLinks}>
-        <button style={c.navLink} onClick={()=>navigate('home')}>Hotels</button>
-        <button style={c.navLink} onClick={()=>navigate('home')}>Explore</button>
-        <button style={c.navCta} onClick={()=>navigate('list')}>List your business</button>
+        <button style={c.navLink} onClick={()=>setPage('home')}>Hotels</button>
+        <button style={c.navLink} onClick={()=>setPage('home')}>Explore</button>
+        <button style={c.navCta} onClick={()=>setPage('list')}>List your business</button>
       </div>
     </nav>
   );
 
-  if (page === 'confirmhotel') return <ConfirmHotelPage bookingRef={confirmRef} onBack={()=>navigate('home')}/>;
-  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>navigate('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>;
-  if (page === 'list') return <ListPage onBack={()=>navigate('home')}/>;
-  if (page === 'admin') return <AdminPage onBack={()=>navigate('home')}/>;
+  if (page === 'confirmhotel') return <ConfirmHotelPage bookingRef={confirmRef} onBack={()=>setPage('home')}/>;
+  if (page === 'search') return <SearchPage initialCity={searchCity} initialCat={searchCat} onBack={()=>setPage('home')} onSelectHotel={(h)=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>;
+  if (page === 'list') return <ListPage onBack={()=>setPage('home')}/>;
+  if (page === 'admin') return <AdminPage onBack={()=>setPage('home')}/>;
 
   if (page === 'home') return (
     <div>
@@ -362,7 +345,7 @@ useEffect(() => {
               </div>
             )}
           </div>
-          <button style={c.sbtn} onClick={()=>navigate('search')}>
+          <button style={c.sbtn} onClick={()=>setPage('search')}>
             <IconSearch size={16}/> Search businesses
           </button>
         </div>
@@ -373,7 +356,7 @@ useEffect(() => {
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(90px,1fr))',gap:8}}>
           {CATEGORIES.map(cat=>(
             <div key={cat.label}
-              onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);navigate('search');}}
+              onClick={()=>{setActiveCat(cat.label);setSearchCat(cat.label);setPage('search');}}
               style={{background:activeCat===cat.label?'#F0F7F4':'#fff',border:activeCat===cat.label?'0.5px solid #2D6A4F':'0.5px solid #C8E6D8',borderRadius:10,padding:'10px 6px',textAlign:'center',cursor:'pointer'}}>
               <i className={`ti ${cat.icon}`} style={{fontSize:22,color:'#2D6A4F',display:'block',marginBottom:5}}></i>
               <div style={{fontSize:10,color:'#1B3A2D',fontWeight:500,lineHeight:1.3}}>{cat.label}</div>
@@ -386,7 +369,7 @@ useEffect(() => {
         <div style={c.stit}>Featured hotels in Jigjiga</div>
         <div style={c.grid}>
           {allHotels.map(h=>(
-            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);navigate('detail');}}/>
+            <HotelCard key={h.id} h={h} onClick={()=>{setSelectedHotel(h);setSelectedRoom(getRooms(h)[1]||getRooms(h)[0]);setPage('detail');}}/>
           ))}
         </div>
       </div>
@@ -396,7 +379,7 @@ useEffect(() => {
           <div style={{ fontFamily:'Georgia,serif', fontSize:15, fontWeight:700, color:'#1B3A2D' }}>Are you a business owner?</div>
           <div style={{ fontSize:11, color:'#4D7A65', marginTop:2 }}>List your business free and reach thousands of customers</div>
         </div>
-        <button style={c.goldBtn} onClick={()=>navigate('list')}>List for free</button>
+        <button style={c.goldBtn} onClick={()=>setPage('list')}>List for free</button>
       </div>
 
       <div style={{...c.sec, background:'#F8F4EC'}}>
@@ -426,7 +409,7 @@ useEffect(() => {
 
       <footer style={c.footer}>
         2026 Ogso - Every business, verified. - Built for the Somali world
-        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')navigate('admin');}}>*</span>
+        <span style={{ cursor:'pointer', color:'#1B3A2D', marginLeft:8 }} onClick={()=>{const pwd=prompt('Admin password:');if(pwd==='Ogso2026!')setPage('admin');}}>*</span>
       </footer>
     </div>
   );
@@ -436,7 +419,7 @@ useEffect(() => {
       <Nav/>
       <div style={c.dhero}>
         <img src={selectedHotel.photo} alt={selectedHotel.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-        <button style={c.backBtn} onClick={()=>navigate('home')}><IconArrowLeft size={13}/> Back</button>
+        <button style={c.backBtn} onClick={()=>setPage('home')}><IconArrowLeft size={13}/> Back</button>
         {selectedHotel.verified && <span style={{ position:'absolute', top:10, right:12, background:'#fff', border:'0.5px solid #52B788', borderRadius:4, padding:'3px 9px', fontSize:10, color:'#1B3A2D', fontWeight:500, zIndex:2 }}>Verified</span>}
       </div>
       <div style={{ padding:'14px 16px' }}>
@@ -449,7 +432,7 @@ useEffect(() => {
           </div>
         </div>
         <div style={{ fontSize:11, color:'#4D7A65', marginBottom:12, display:'flex', alignItems:'center', gap:4 }}>
-          <IconMapPin size={12}/>{selectedHotel.city} - Somali Region
+          <IconMapPin size={12}/>{selectedHotel.suburb ? `${selectedHotel.suburb}, ` : ''}{selectedHotel.city} - Somali Region
         </div>
         <div style={{ marginBottom:14 }}>
           {selectedHotel.amenities.map(a=>(
@@ -482,10 +465,9 @@ useEffect(() => {
 
         <ReviewSection hotelId={selectedHotel.id} hotelName={selectedHotel.name}/>
 
-        <button style={{...c.pbtn, marginTop:16}} onClick={()=>navigate('booking')}>
+        <button style={{...c.pbtn, marginTop:16}} onClick={()=>setPage('booking')}>
           <IconBrandWhatsapp size={16}/> Book now - confirm via WhatsApp
         </button>
-   
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
       {roomGallery && <RoomPhotoGallery photos={roomGallery.photos} roomName={roomGallery.name} onClose={() => setRoomGallery(null)}/>}
@@ -551,7 +533,7 @@ useEffect(() => {
           <button type="submit" style={c.pbtn}>
             <IconBrandWhatsapp size={16}/> Confirm booking via WhatsApp
           </button>
-          <button type="button" style={c.obtn} onClick={()=>navigate('detail')}>Back to hotel</button>
+          <button type="button" style={c.obtn} onClick={()=>setPage('detail')}>Back to hotel</button>
         </form>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
@@ -565,7 +547,7 @@ useEffect(() => {
         <div style={{ textAlign:'center', paddingBottom:18, borderBottom:'0.5px solid #C8E6D8' }}>
           <div style={c.confIcon}><IconCheck size={30} color="#2D6A4F"/></div>
           <h1 style={{ fontFamily:'Georgia,serif', fontSize:22, color:'#1B3A2D', marginBottom:6 }}>Booking confirmed!</h1>
-          <p style={{ fontSize:12, color:'#4D7A65' }}>The hotel will contact you on WhatsApp within 2 hours.</p>
+          <p style={{ fontSize:12, color:'#4D7A65' }}>The hotel will confirm via WhatsApp within 2 hours.</p>
         </div>
         <div style={c.confCard}>
           <div style={{ fontSize:10, color:'#4D7A65', marginBottom:4 }}>Booking reference</div>
@@ -585,10 +567,10 @@ useEffect(() => {
         </div>
         <div style={c.waBanner}>
           <IconBrandWhatsapp size={22} color="#2D6A4F"/>
-          <div style={{ fontSize:12, color:'#1B3A2D', lineHeight:1.5 }}>A WhatsApp confirmation and the hotel's direct number have been sent to {bookingDone.form.phone||'your phone'}.</div>
+          <div style={{ fontSize:12, color:'#1B3A2D', lineHeight:1.5 }}>A WhatsApp confirmation has been sent to {bookingDone.form.phone||'your phone'}.</div>
         </div>
-        <button style={c.pbtn} onClick={()=>navigate('home')}>Back to home</button>
-        <button style={{...c.obtn, marginTop:8}} onClick={()=>navigate('search')}>Browse more hotels</button>
+        <button style={c.pbtn} onClick={()=>setPage('home')}>Back to home</button>
+        <button style={{...c.obtn, marginTop:8}} onClick={()=>setPage('search')}>Browse more hotels</button>
       </div>
       <footer style={c.footer}>2026 Ogso - Every business, verified.</footer>
     </div>
