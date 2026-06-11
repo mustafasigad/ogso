@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
       ? Math.max(1, Math.ceil((new Date(req.body.checkOut) - new Date(req.body.checkIn)) / 86400000))
       : 1;
     const totalPrice = (req.body.pricePerNight || 0) * nights;
-    const confirmUrl = `${process.env.CLIENT_URL}/?confirm=${ref}`;
+    const confirmUrl = `${process.env.CLIENT_URL}confirm/${ref}`;
 
     const booking = await Booking.create({
       ref,
