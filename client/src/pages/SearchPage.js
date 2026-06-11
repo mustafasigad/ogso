@@ -1,38 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   IconSearch, IconArrowLeft, IconBuilding, IconMapPin,
   IconStar, IconShieldCheck, IconAdjustmentsHorizontal,
   IconLoader2
 } from '@tabler/icons-react';
+import Nav from '../components/Nav';
+import { HARDCODED_HOTELS, CAT_MAP, API, DEFAULT_PHOTO } from '../shared/data';
 
 const CITIES = ['All cities','Jigjiga','Mogadishu','Hargeisa','Djibouti City','Garissa','Dire Dawa','Harar'];
 const CATEGORIES = ['Hotels','Restaurants','Clinics','Pharmacies','Shops','Car hire','Money transfer',
   'Bookshop','Mechanic','Repairs','Petrol Station','Hardware','Bridal Wear','Beauty Salon',
   'Barber','Bakery','Men Wear','Women Wear','Children Wear','Cleaning Service','Shopping Mall',
   'Educational Service','Used Items'];
-const CAT_MAP = {
-  'Hotels':'hotel','Restaurants':'restaurant','Clinics':'clinic','Pharmacies':'pharmacy',
-  'Shops':'shop','Car hire':'car_hire','Money transfer':'money_transfer','Bookshop':'bookshop',
-  'Mechanic':'mechanic','Repairs':'repairs','Petrol Station':'petrol_station','Hardware':'hardware',
-  'Bridal Wear':'bridal_wear','Beauty Salon':'beauty_salon','Barber':'barber','Bakery':'bakery',
-  'Men Wear':'men_wear','Women Wear':'women_wear','Children Wear':'children_wear',
-  'Cleaning Service':'cleaning_service','Shopping Mall':'shopping_mall',
-  'Educational Service':'educational_service','Used Items':'used_items'
-};
-const DEFAULT_PHOTO = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80';
 
-const HARDCODED_HOTELS = [
-  { id:'1', name:'Jigjiga Grand Hotel', city:'Jigjiga', price:1200, rating:4.6, reviews:84, verified:true, amenities:['WiFi','Breakfast','AC','Parking'], photo:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&q=80', desc:'The most prestigious hotel in Jigjiga.', category:'hotel', phone:'+251257750001', rooms:[{type:'standard',name:'Standard Room',price:1200,beds:'Double bed, AC',popular:false},{type:'deluxe',name:'Deluxe Room',price:1800,beds:'King bed, city view',popular:true}] },
-  { id:'2', name:'Al-Noor Hotel', city:'Jigjiga', price:850, rating:4.3, reviews:51, verified:true, amenities:['WiFi','AC','Prayer room'], photo:'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&q=80', desc:'Popular with business travellers and families.', category:'hotel', phone:'+251257750002', rooms:[{type:'standard',name:'Standard Room',price:850,beds:'Double bed, AC',popular:false},{type:'deluxe',name:'Deluxe Room',price:1300,beds:'King bed',popular:true}] },
-  { id:'3', name:'Hawd Guest House', city:'Jigjiga', price:550, rating:4.1, reviews:37, verified:false, amenities:['WiFi','Budget'], photo:'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=400&q=80', desc:'Clean and affordable guesthouse.', category:'hotel', phone:'+251257750003', rooms:[{type:'standard',name:'Standard Room',price:550,beds:'Double bed',popular:true}] },
-  { id:'4', name:'Nugaal Palace Hotel', city:'Jigjiga', price:1500, rating:4.4, reviews:62, verified:true, amenities:['Rooftop','Restaurant','WiFi'], photo:'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400&q=80', desc:'Rooftop terrace with city views.', category:'hotel', phone:'+251257750004', rooms:[{type:'standard',name:'Standard Room',price:1500,beds:'Double bed',popular:false},{type:'deluxe',name:'Deluxe Room',price:2200,beds:'King bed, rooftop view',popular:true}] },
-  { id:'5', name:'Jubba Hotel', city:'Jigjiga', price:900, rating:4.2, reviews:43, verified:false, amenities:['WiFi','Restaurant'], photo:'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=400&q=80', desc:'Comfortable accommodation in central Jigjiga.', category:'hotel', phone:'+251257750005', rooms:[{type:'standard',name:'Standard Room',price:900,beds:'Double bed',popular:false},{type:'deluxe',name:'Deluxe Room',price:1400,beds:'King bed',popular:true}] },
-  { id:'6', name:'Oriental Hotel Jigjiga', city:'Jigjiga', price:700, rating:4.0, reviews:28, verified:false, amenities:['WiFi','Near market'], photo:'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=400&q=80', desc:'Near the main Jigjiga market.', category:'hotel', phone:'+251257750006', rooms:[{type:'standard',name:'Standard Room',price:700,beds:'Double bed',popular:true}] },
-];
+export default function SearchPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-export default function SearchPage({ initialCity, initialCat, onBack, onSelectHotel }) {
-  const [city, setCity] = useState(initialCity || 'All cities');
-  const [category, setCategory] = useState(initialCat || 'Hotels');
+  const [city, setCity] = useState(searchParams.get('city') || 'All cities');
+  const [category, setCategory] = useState(searchParams.get('cat') || 'Hotels');
   const [searchText, setSearchText] = useState('');
   const [sortBy, setSortBy] = useState('rating');
   const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -58,15 +45,14 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
       params.set('limit', LIMIT);
       params.set('page', pageNum);
 
-      const res = await fetch(`https://ogso-production.up.railway.app/api/businesses?${params}`);
+      const res = await fetch(`${API}/businesses?${params}`);
       const data = await res.json();
       let businesses = (data.businesses || []).map(b => ({
         id: b._id, name: b.name, city: b.city, suburb: b.suburb || '',
         price: b.price || 0, rating: b.rating || 0, reviews: b.reviewCount || 0,
         verified: b.verified, amenities: b.amenities || [],
         photo: b.photos && b.photos.length > 0 ? b.photos[0] : DEFAULT_PHOTO,
-        photos: b.photos || [], desc: b.description || '',
-        category: b.category, phone: b.phone || '', rooms: b.rooms || [],
+        desc: b.description || '', category: b.category, phone: b.phone || '',
       }));
 
       if (mappedCat === 'hotel') {
@@ -103,12 +89,11 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
 
   const s = {
     wrap: { minHeight: '100vh', background: '#F8F4EC' },
-    header: { background: '#fff', padding: '12px 16px', borderBottom: '0.5px solid #C8E6D8', position: 'sticky', top: 0, zIndex: 90 },
+    header: { background: '#fff', padding: '12px 16px', borderBottom: '0.5px solid #C8E6D8', position: 'sticky', top: 56, zIndex: 90 },
     searchRow: { display: 'flex', gap: 8, marginBottom: 10 },
     searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: 8, background: '#F0F7F4', borderRadius: 10, padding: '0 12px' },
     searchInput: { flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: '#1B3A2D', padding: '9px 0' },
     searchBtn: { background: '#2D6A4F', border: 'none', borderRadius: 8, padding: '8px 14px', color: '#fff', fontSize: 12, cursor: 'pointer' },
-    backBtn: { background: '#F0F7F4', border: '0.5px solid #C8E6D8', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#2D6A4F', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
     filterBtn: { background: '#F0F7F4', border: '0.5px solid #C8E6D8', borderRadius: 10, padding: '8px 12px', fontSize: 11, color: '#2D6A4F', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 },
     filterPanel: { background: '#F8F4EC', borderRadius: 10, padding: 12, marginBottom: 10, border: '0.5px solid #C8E6D8' },
     filterGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
@@ -131,6 +116,7 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
 
   return (
     <div style={s.wrap}>
+      <Nav/>
       <div style={s.header}>
         <div style={s.searchRow}>
           <div style={s.searchBox}>
@@ -145,7 +131,7 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
           <button style={s.filterBtn} onClick={() => setShowFilters(!showFilters)}>
             <IconAdjustmentsHorizontal size={13}/>
           </button>
-          <button style={s.backBtn} onClick={onBack}>
+          <button style={s.filterBtn} onClick={() => navigate(-1)}>
             <IconArrowLeft size={13}/>
           </button>
         </div>
@@ -209,7 +195,7 @@ export default function SearchPage({ initialCity, initialCat, onBack, onSelectHo
             <div style={{ fontSize: 12, color: '#4D7A65', marginBottom: 12 }}>{results.length} {category.toLowerCase()} found</div>
             <div style={s.grid}>
               {results.map(h => (
-                <div key={h.id} style={s.card} onClick={() => onSelectHotel && onSelectHotel(h)}>
+                <div key={h.id} style={s.card} onClick={() => navigate(`/hotel/${h.id}`)}>
                   <div style={s.cardImg}>
                     <img src={h.photo} alt={h.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }}/>
                     {h.verified && <span style={s.vbadge}><IconShieldCheck size={8} style={{ marginRight: 2 }}/>Verified</span>}

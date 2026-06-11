@@ -1,4 +1,4 @@
-const router = require("express").Router();
+﻿const router = require("express").Router();
 const Booking = require("../models/Booking");
 const twilio = require("twilio");
 
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
       ? Math.max(1, Math.ceil((new Date(req.body.checkOut) - new Date(req.body.checkIn)) / 86400000))
       : 1;
     const totalPrice = (req.body.pricePerNight || 0) * nights;
-    const confirmUrl = `${process.env.CLIENT_URL}confirm/${ref}`;
+    const confirmUrl = `${process.env.CLIENT_URL}/confirm/${ref}`;
 
     const booking = await Booking.create({
       ref,
@@ -69,12 +69,12 @@ router.post("/", async (req, res) => {
 
     // WhatsApp to guest
     await sendWA(req.body.guestPhone,
-      `✅ Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
+      `âœ… Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
     );
 
     // WhatsApp to hotel
     await sendWA(req.body.hotelPhone,
-      `🏨 New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
+      `ðŸ¨ New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
     );
 
     res.status(201).json({ booking });
@@ -95,11 +95,11 @@ router.patch("/ref/:ref/status", async (req, res) => {
     // Notify guest
     if (status === "confirmed") {
       await sendWA(booking.guestPhone,
-        `✅ *Booking Confirmed!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! 🌟`
+        `âœ… *Booking Confirmed!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! ðŸŒŸ`
       );
     } else if (status === "cancelled") {
       await sendWA(booking.guestPhone,
-        `❌ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
+        `âŒ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
       );
     }
 
@@ -118,3 +118,4 @@ router.patch("/:id/status", async (req, res) => {
 });
 
 module.exports = router;
+
