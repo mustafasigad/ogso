@@ -1,4 +1,4 @@
-﻿const router = require("express").Router();
+const router = require("express").Router();
 const Booking = require("../models/Booking");
 const twilio = require("twilio");
 
@@ -20,7 +20,6 @@ async function sendWA(to, msg) {
   }
 }
 
-// GET all bookings
 router.get("/my", async (req, res) => {
   try {
     const bookings = await Booking.find().sort({ createdAt: -1 }).limit(100);
@@ -28,7 +27,6 @@ router.get("/my", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// GET single booking by ref (for confirm page)
 router.get("/ref/:ref", async (req, res) => {
   try {
     const booking = await Booking.findOne({ ref: req.params.ref.toUpperCase() });
@@ -37,7 +35,6 @@ router.get("/ref/:ref", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST create booking
 router.post("/", async (req, res) => {
   try {
     const ref = Math.random().toString(36).substr(2, 8).toUpperCase();
@@ -67,24 +64,21 @@ router.post("/", async (req, res) => {
       status: "pending",
     });
 
-    // WhatsApp to guest
     await sendWA(req.body.guestPhone,
-      `✅ Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
+      "Booking received on Ogso!\n\nRef: " + ref + "\nHotel: " + req.body.hotelName + "\nRoom: " + req.body.roomName + "\nCheck-in: " + req.body.checkIn + "\nTotal: ETB " + totalPrice.toLocaleString() + "\n\nThe hotel will confirm within 2 hours. We will notify you!"
     );
 
-    // WhatsApp to hotel
     await sendWA(req.body.hotelPhone,
-      `🏨 New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
+      "New booking on Ogso!\n\nGuest: " + req.body.guestName + "\nRoom: " + req.body.roomName + "\nCheck-in: " + req.body.checkIn + "\nNights: " + nights + "\nTotal: ETB " + totalPrice.toLocaleString() + "\nGuest phone: " + req.body.guestPhone + "\n\nTap to confirm or cancel:\n" + confirmUrl
     );
 
     res.status(201).json({ booking });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PATCH confirm or cancel by ref
 router.patch("/ref/:ref/status", async (req, res) => {
   try {
-    const { status } = req.body; // "confirmed" or "cancelled"
+    const { status } = req.body;
     const booking = await Booking.findOneAndUpdate(
       { ref: req.params.ref.toUpperCase() },
       { status },
@@ -92,14 +86,13 @@ router.patch("/ref/:ref/status", async (req, res) => {
     );
     if (!booking) return res.status(404).json({ error: "Booking not found" });
 
-    // Notify guest
     if (status === "confirmed") {
       await sendWA(booking.guestPhone,
-        `✅ *Booking Confirmed!!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! ðŸŒŸ`
+        "Booking Confirmed!\n\nRef: " + booking.ref + "\nHotel: " + booking.hotelName + "\nRoom: " + booking.roomName + "\nCheck-in: " + booking.checkIn + "\nNights: " + booking.nights + "\nTotal: ETB " + (booking.totalPrice || 0).toLocaleString() + "\n\nSee you soon!"
       );
     } else if (status === "cancelled") {
       await sendWA(booking.guestPhone,
-        `❌ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
+        "Booking Cancelled\n\nRef: " + booking.ref + "\nUnfortunately " + booking.hotelName + " has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel."
       );
     }
 
@@ -107,7 +100,6 @@ router.patch("/ref/:ref/status", async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// PATCH update by id (admin)
 router.patch("/:id/status", async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(
@@ -118,4 +110,3 @@ router.patch("/:id/status", async (req, res) => {
 });
 
 module.exports = router;
-
