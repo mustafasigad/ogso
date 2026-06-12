@@ -69,12 +69,12 @@ router.post("/", async (req, res) => {
 
     // WhatsApp to guest
     await sendWA(req.body.guestPhone,
-      `âœ… Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
+      `✅ Booking received on Ogso!\n\nRef: *${ref}*\nHotel: ${req.body.hotelName}\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nTotal: ETB ${totalPrice.toLocaleString()}\n\nThe hotel will confirm within 2 hours. We will notify you!`
     );
 
     // WhatsApp to hotel
     await sendWA(req.body.hotelPhone,
-      `ðŸ¨ New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
+      `🏨 New booking on Ogso!\n\nGuest: *${req.body.guestName}*\nRoom: ${req.body.roomName}\nCheck-in: ${req.body.checkIn}\nNights: ${nights}\nTotal: ETB ${totalPrice.toLocaleString()}\nGuest phone: ${req.body.guestPhone}\n\nTap to confirm or cancel:\n${confirmUrl}`
     );
 
     res.status(201).json({ booking });
@@ -95,11 +95,11 @@ router.patch("/ref/:ref/status", async (req, res) => {
     // Notify guest
     if (status === "confirmed") {
       await sendWA(booking.guestPhone,
-        `âœ… *Booking Confirmed!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! ðŸŒŸ`
+        `✅ *Booking Confirmed!!*\n\nRef: *${booking.ref}*\nHotel: ${booking.hotelName}\nRoom: ${booking.roomName}\nCheck-in: ${booking.checkIn}\nNights: ${booking.nights}\nTotal: ETB ${booking.totalPrice?.toLocaleString()}\n\nSee you soon! ðŸŒŸ`
       );
     } else if (status === "cancelled") {
       await sendWA(booking.guestPhone,
-        `âŒ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
+        `❌ Booking Cancelled\n\nRef: *${booking.ref}*\nUnfortunately ${booking.hotelName} has cancelled your booking. Please visit ogso-pink.vercel.app to find another hotel.`
       );
     }
 
